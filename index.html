@@ -975,7 +975,7 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtCCYelKVsriPvJXC-WcRyKN75i7yJ8ihxD_PqUQw35iOsY6OFBkkk2aZA191Wjxx4WA/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXFSvmf2ygfB-sUsTYeLAm-NXzWZFILFD2TRuZCPSPwNZ43KOsSCDbxmZd8cBqfu4NTg/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
@@ -3684,11 +3684,14 @@ function renderKaryawanPage() {
     const statusBadge = isActive
       ? `<span class="text-[8px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded ml-1">AKTIF</span>`
       : `<span class="text-[8px] bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded ml-1">NONAKTIF</span>`;
+    const resignBadge = (isActive && k.resignEfektif)
+      ? `<span class="text-[8px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded ml-1 whitespace-nowrap" title="Resign sudah disetujui. Akun nonaktif otomatis pada tanggal efektif."><i class="fa-solid fa-door-open mr-0.5"></i>RESIGN ${escapeHtml(String(k.resignEfektif).split('-').reverse().join('-'))}</span>`
+      : '';
     html += `<div class="flex items-center justify-between p-3 bg-slate-50 border rounded-xl gap-2 hover:bg-slate-100 transition-colors">
       <div class="flex items-center space-x-2.5 min-w-0 flex-1">
         <div id="item-avatar-${idx}" class="w-9 h-9 rounded-full overflow-hidden flex-shrink-0"></div>
         <div class="min-w-0 flex-1">
-          <p class="text-xs font-bold text-slate-800 truncate flex items-center">${escapeHtml(k.nama)} ${statusBadge}</p>
+          <p class="text-xs font-bold text-slate-800 truncate flex items-center">${escapeHtml(k.nama)} ${statusBadge}${resignBadge}</p>
           <p class="text-[10px] text-slate-400 truncate">NIK: ${escapeHtml(k.nik)} | Shift: ${escapeHtml(k.shift || '-')}</p>
         </div>
       </div>
