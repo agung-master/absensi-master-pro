@@ -400,7 +400,7 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
           <div class="min-w-0"><label class="text-[9px] font-bold text-slate-500 block mb-1">BULAN</label><input type="month" id="filter-riwayat-bulan" onchange="debouncedFilterRiwayat()" class="w-full p-2 border rounded-xl text-xs bg-slate-50"></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div class="min-w-0"><label class="text-[9px] font-bold text-slate-500 block mb-1">TAHUN</label><select id="filter-riwayat-tahun" onchange="debouncedFilterRiwayat()" class="w-full p-2 border rounded-xl text-xs bg-slate-50 font-bold"><option value="">Semua</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option></select></div>
+          <div class="min-w-0"><label class="text-[9px] font-bold text-slate-500 block mb-1">TAHUN</label><select id="filter-riwayat-tahun" onchange="debouncedFilterRiwayat()" class="w-full p-2 border rounded-xl text-xs bg-slate-50 font-bold"><option value="">Semua</option></select></div>
           <div class="min-w-0"><label class="text-[9px] font-bold text-slate-500 block mb-1">JENIS</label><select id="filter-riwayat-jenis" onchange="debouncedFilterRiwayat()" class="w-full p-2 border rounded-xl text-xs bg-slate-50 font-bold"><option value="">Semua</option><option value="IZIN">Izin</option><option value="LEMBUR">Lembur</option><option value="SHIFT">Tukar Shift</option><option value="KOREKSI">Koreksi</option><option value="RESIGN">Resign</option><option value="REIMBURSE">Reimburse</option></select></div>
         </div>
         <div class="flex space-x-2 pt-1">
@@ -975,13 +975,26 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhhPjZM6yRGLyNkUiMDi_S76BSA59utga_guVf3NG2ewb8A8L67EFYHA8xgEblRBwnYQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwdeztWsjHZzU4vABJmaLfol8PaVNSUv2XZMgfUq47y4FZTycxtzgYmf9jCpDCJpMG2hA/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
 const HEARTBEAT_INTERVAL_MS = 60 * 1000;
 const DEVICE_ID_KEY = 'absenPro_device_id';
 const SESSION_TOKEN_KEY = 'absenPro_session';
+(function fillRiwayatYears() {
+  function fill() {
+    var s = document.getElementById('filter-riwayat-tahun');
+    if (!s || s.dataset.filled) return;
+    var y = new Date().getFullYear(), o = '<option value="">Semua</option>';
+    for (var i = y + 1; i >= 2025; i--) o += '<option value="' + i + '">' + i + '</option>';
+    s.innerHTML = o; s.dataset.filled = '1';
+  }
+  document.addEventListener('DOMContentLoaded', fill);
+})();
+window.addEventListener('unhandledrejection', function(ev) {
+  try { ev.preventDefault(); showToast('Koneksi bermasalah atau server tidak merespons. Silakan coba lagi.', 'error'); } catch (e) {}
+});
 
 // ============================================================
 // IDENTITAS PERANGKAT & SESI
@@ -2253,16 +2266,17 @@ function getLocationAndVerifyGeofence() {
       fetchAddressForStamp(userLat, userLng);
 
       if (officeLocations.length > 0) {
-        let isInAnyRadius = false;
+        let isInAnyRadius = false; let bestInDist = Infinity;
         let closestDistance = Infinity;
         officeLocations.forEach(office => {
           const dist = calculateDistance(userLat, userLng, office.lat, office.lng);
           if (dist < closestDistance) closestDistance = dist;
           const effectiveRadius = parseFloat(office.radius) + Math.min(pos.coords.accuracy || 0, 200);
-          if (dist <= effectiveRadius) { isInAnyRadius = true; currentOfficeMatchedName = office.nama; }
+          if (dist <= effectiveRadius && dist < bestInDist) { isInAnyRadius = true; bestInDist = dist; currentOfficeMatchedName = office.nama; }
         });
 
-        geoState = { ready: true, inRange: isInAnyRadius };
+        if (!isInAnyRadius && currentUser && String(currentUser.tipeAkses || '').toLowerCase() === 'bebas') { isInAnyRadius = true; currentOfficeMatchedName = 'Di Luar Kantor (Akses Bebas)'; }
+  geoState = { ready: true, inRange: isInAnyRadius };
 
         if (isInAnyRadius) {
           if (statusDiv) {
@@ -3904,7 +3918,7 @@ function editKaryawan(nik) {
   document.getElementById('add-status').value = k.status || 'AKTIF';
   document.getElementById('add-aturan-shift').value = k.tipeAturanShift || 'Selalu Sama';
   toggleAturanShiftUI();
-  document.getElementById('add-shift-select').value = k.shift || '';
+  document.getElementById('add-shift-select').value = (k.shiftDefault !== undefined ? k.shiftDefault : k.shift) || '';
   document.getElementById('add-tgljoin').value = k.tglJoin || getLocalDateString();
   document.getElementById('add-telp').value = k.telp || '';
   document.getElementById('add-email').value = k.email || '';
@@ -4545,6 +4559,7 @@ function submitFormIzin(e) {
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
         processAndSubmit(canvas.toDataURL('image/jpeg', 0.7));
       };
+      img.onerror = function() { showToast('File bukan gambar yang valid. Gunakan foto JPG/PNG.', 'error'); if (typeof btn !== 'undefined') setLoading(btn, false); };
       img.src = event.target.result;
     };
     reader.readAsDataURL(fileInput.files[0]);
@@ -4556,6 +4571,8 @@ function submitFormReimburse(e) {
   const btn = document.getElementById('btn-submit-reimburse');
   setLoading(btn, true);
   const fileInput = document.getElementById('rb-foto');
+  const _jmlRb = Number(document.getElementById('rb-jumlah').value);
+  if (!isFinite(_jmlRb) || _jmlRb <= 0) { showToast('Jumlah harus lebih dari 0.', 'warning'); setLoading(btn, false); return; }
   if (!fileInput || fileInput.files.length === 0) {
     showToast("Bukti foto wajib diunggah!", 'warning');
     setLoading(btn, false);
@@ -4585,7 +4602,8 @@ function submitFormReimburse(e) {
         }
       }).finally(() => setLoading(btn, false));
     };
-    img.src = event.target.result;
+    img.onerror = function() { showToast('File bukan gambar yang valid. Gunakan foto JPG/PNG.', 'error'); if (typeof btn !== 'undefined') setLoading(btn, false); };
+      img.src = event.target.result;
   };
   reader.readAsDataURL(fileInput.files[0]);
 }
@@ -4702,8 +4720,8 @@ function tarikDataPayroll() {
       if (res.status === "success") {
         const data = res.data;
         if (data.bonusLemburCalc > 0) document.getElementById('sg-bonus-lembur').value = data.bonusLemburCalc;
-        const catatanLama = document.getElementById('sg-catatan').value;
-        document.getElementById('sg-catatan').value = `${catatanLama} | Hadir: ${data.hadir}hr, Telat: ${data.terlambat}x, Lembur: ${data.lemburMenit}mnt (Pengali: ${data.pengali})`;
+        const catatanLama = document.getElementById('sg-catatan').value.replace(/\s*\|?\s*Hadir: \d+hr, Telat:.*$/, '').trim();
+        document.getElementById('sg-catatan').value = `${catatanLama ? catatanLama + ' | ' : ''}Hadir: ${data.hadir}hr, Telat: ${data.terlambat}x, Lembur: ${data.lemburMenit}mnt (Pengali: ${data.pengali})`;
         showToast(`Data ditarik! Hadir: ${data.hadir}, Lembur: ${data.lemburMenit} mnt, Bonus: Rp ${data.bonusLemburCalc.toLocaleString('id-ID')}`, 'success');
         calcTotalGaji();
       } else showToast("Gagal menarik data", 'error');
@@ -5647,6 +5665,7 @@ function submitKoreksiAbsen(e) {
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
         send(canvas.toDataURL('image/jpeg', 0.7));
       };
+      img.onerror = function() { showToast('File bukan gambar yang valid. Gunakan foto JPG/PNG.', 'error'); if (typeof btn !== 'undefined') setLoading(btn, false); };
       img.src = event.target.result;
     };
     reader.readAsDataURL(fileInput.files[0]);
