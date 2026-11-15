@@ -975,7 +975,7 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXFSvmf2ygfB-sUsTYeLAm-NXzWZFILFD2TRuZCPSPwNZ43KOsSCDbxmZd8cBqfu4NTg/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhhPjZM6yRGLyNkUiMDi_S76BSA59utga_guVf3NG2ewb8A8L67EFYHA8xgEblRBwnYQ/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
@@ -1808,6 +1808,8 @@ function loadMyIzinKeluarHistory(force) {
       if (res.status === 'success') {
         setCached('myIzinKeluarHistory', res.data || [], ck, DEFAULT_CACHE_TTL);
         renderMyIzinKeluarHistory(res.data);
+      } else {
+        container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">${escapeHtml(res.message || 'Gagal memuat')}</p>`;
       }
     }).catch(err => { container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">Error</p>'; });
 }
@@ -1860,6 +1862,8 @@ function loadHrIzinKeluarHistory(force) {
       if (res.status === 'success') {
         setCached('hrIzinKeluarHistory', res.data || [], ck, DEFAULT_CACHE_TTL);
         renderHrIzinKeluarHistory(res.data);
+      } else {
+        container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">${escapeHtml(res.message || 'Gagal memuat')}</p>`;
       }
     }).catch(err => { container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">Error</p>'; });
 }
@@ -2735,6 +2739,9 @@ function openAbsenDetailModal(nik, kategori) {
     const mapsBtn = data.koordinat && data.koordinat !== '-'
       ? `<a href="https://www.google.com/maps?q=${escapeHtml(data.koordinat)}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-white border border-slate-200 text-red-500 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform" title="Lihat Lokasi"><i class="fa-solid fa-location-dot text-xs"></i></a>`
       : '';
+    const fotoPulangBtn = data.fotoPulangUrl && String(data.fotoPulangUrl).indexOf('http') === 0
+      ? `<a href="#" data-private-file="${escapeHtml(data.fotoPulangUrl)}" class="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform" title="Lihat Foto Pulang"><i class="fa-solid fa-camera text-xs"></i></a>`
+      : '';
 
     html += `
       <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm mb-2 relative overflow-hidden">
@@ -2759,6 +2766,7 @@ function openAbsenDetailModal(nik, kategori) {
             <p class="text-[9px] text-slate-400 mt-2">Keterangan</p>
             <p class="text-xs font-semibold text-slate-600">-</p>
           </div>
+          <div class="flex items-center gap-2">${fotoPulangBtn}</div>
         </div>
       </div>
     `;
@@ -3545,7 +3553,10 @@ function renderKuotaCutiHR(data) {
 function handleSaveKuotaCuti(e) {
   e.preventDefault();
   const sel = document.getElementById('kq-nik');
+  if (!sel.value) { showToast('Pilih karyawan terlebih dahulu!', 'warning'); return; }
   const opt = sel.options[sel.selectedIndex];
+  const btn = e.target.querySelector('button[type="submit"]');
+  setLoading(btn, true);
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({
     action: "saveKuotaCuti",
     nik: sel.value,
@@ -3560,7 +3571,8 @@ function handleSaveKuotaCuti(e) {
       invalidateCache('kuotaCutiHR', 'kuotaCuti');
       loadKuotaCutiHR(true);
     }
-  });
+  }).catch(err => showToast('Error: ' + err.message, 'error'))
+    .finally(() => setLoading(btn, false));
 }
 
 // ============================================================
@@ -3855,13 +3867,13 @@ function handleSaveKaryawan(e) {
         } else {
           showToast(res.message + ' — ⚠️ Jadwal GAGAL: ' + (schedRes && schedRes.message ? schedRes.message : 'unknown'), 'warning');
         }
-        invalidateCache('employees', 'jadwalShift');
+        invalidateCache('employees', 'jadwalShift', 'directory');
         resetFormKaryawan();
         loadAllKaryawanHR(true);
         setLoading(btn, false);
       }).catch((err) => {
         showToast(res.message + ' — ⚠️ Jadwal error: ' + (err && err.message ? err.message : 'network'), 'warning');
-        invalidateCache('employees');
+        invalidateCache('employees', 'directory');
         resetFormKaryawan();
         loadAllKaryawanHR(true);
         setLoading(btn, false);
@@ -3992,10 +4004,10 @@ function downloadLaporanAbsensi() {
       if (res.status === "success" && res.data.length > 0) {
         let csvContent = "\uFEFF";
         csvContent += "=== DETAIL ABSENSI ===\n";
-        csvContent += "NIK,Tanggal,Jam Masuk,Jam Keluar,Nama,Tipe Masuk,Tipe Keluar,Status Foto,Menit Terlambat,Menit Pulang Awal,Menit Lembur,Lokasi/Catatan,Koordinat,Cabang Absen,Durasi Keluar (Menit),Jam Kerja Efektif\n";
+        csvContent += "NIK,Tanggal,Jam Masuk,Jam Keluar,Nama,Tipe Masuk,Tipe Keluar,Foto Masuk,Foto Pulang,Menit Terlambat,Menit Pulang Awal,Menit Lembur,Lokasi/Catatan,Koordinat,Cabang Absen,Durasi Keluar (Menit),Jam Kerja Efektif\n";
         const esc = (v) => { const s = (v === null || v === undefined || v === "") ? "-" : String(v); return `"${s.replace(/"/g, '""')}"`; };
         res.data.forEach(row => {
-          csvContent += [esc(row.nik), esc(row.tanggal), esc(row.jamMasuk), esc(row.jamKeluar), esc(row.nama), esc(row.tipeMasuk), esc(row.tipeKeluar), esc(row.fotoUrl), esc(row.menitTerlambat), esc(row.menitPulangAwal), esc(row.menitLembur), esc(row.lokasi), esc(row.koordinat), esc(row.cabangAbsen), esc(row.durasiKeluarMenit), esc(row.jamKerjaEfektif)].join(",") + "\n";
+          csvContent += [esc(row.nik), esc(row.tanggal), esc(row.jamMasuk), esc(row.jamKeluar), esc(row.nama), esc(row.tipeMasuk), esc(row.tipeKeluar), esc(row.fotoUrl), esc(row.fotoPulangUrl), esc(row.menitTerlambat), esc(row.menitPulangAwal), esc(row.menitLembur), esc(row.lokasi), esc(row.koordinat), esc(row.cabangAbsen), esc(row.durasiKeluarMenit), esc(row.jamKerjaEfektif)].join(",") + "\n";
         });
         if (res.rekap && res.rekap.length > 0) {
           csvContent += "\n\n=== REKAP PER KARYAWAN ===\n";
@@ -4138,7 +4150,9 @@ function renderHrRekapAbsensi(data, rekap, start, end, nikFilter) {
       const isLate = String(item.tipeMasuk || '').toLowerCase().indexOf('terlambat') !== -1;
       const badgeColor = isLate ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700';
       const fotoLink = item.fotoUrl && String(item.fotoUrl).indexOf('http') === 0
-        ? `<a href="#" data-private-file="${escapeHtml(item.fotoUrl)}" class="text-primary text-[9px] underline font-bold ml-auto"><i class="fa-solid fa-camera"></i> Foto</a>` : '';
+        ? `<a href="#" data-private-file="${escapeHtml(item.fotoUrl)}" class="text-primary text-[9px] underline font-bold ml-auto"><i class="fa-solid fa-camera"></i> Foto Masuk</a>` : '';
+      const fotoPulangLink = item.fotoPulangUrl && String(item.fotoPulangUrl).indexOf('http') === 0
+        ? `<a href="#" data-private-file="${escapeHtml(item.fotoPulangUrl)}" class="text-primary text-[9px] underline font-bold"><i class="fa-solid fa-camera"></i> Foto Pulang</a>` : '';
       let izinKeluarHtml = '';
       if (item.detailIzinKeluar && item.detailIzinKeluar.length > 0) {
         izinKeluarHtml = `<div class="mt-1 bg-white p-1.5 rounded border border-slate-200">
@@ -4169,7 +4183,7 @@ function renderHrRekapAbsensi(data, rekap, start, end, nikFilter) {
         <div class="text-[9px] text-slate-500 flex flex-wrap gap-x-2 gap-y-1 pt-1 border-t border-slate-200">
           <span class="truncate"><i class="fa-solid fa-building text-[8px]"></i> ${escapeHtml(item.cabangAbsen || '-')}</span>
           <span class="truncate"><i class="fa-solid fa-location-dot text-[8px]"></i> ${escapeHtml(item.lokasi || '-')}</span>
-          ${fotoLink}
+          ${fotoLink}${fotoPulangLink}
         </div>
       </div>`;
     });
@@ -4202,9 +4216,9 @@ function downloadRekapAbsensiHRCSV() {
     }
     if (lastHrRekapData.length > 0) {
       csvContent += "=== DETAIL ABSENSI ===\n";
-      csvContent += "NIK,Tanggal,Jam Masuk,Jam Keluar,Nama,Tipe Masuk,Tipe Keluar,Status Foto,Menit Terlambat,Menit Pulang Awal,Menit Lembur,Lokasi/Catatan,Koordinat,Cabang Absen,Durasi Keluar (Menit),Jam Kerja Efektif\n";
+      csvContent += "NIK,Tanggal,Jam Masuk,Jam Keluar,Nama,Tipe Masuk,Tipe Keluar,Foto Masuk,Foto Pulang,Menit Terlambat,Menit Pulang Awal,Menit Lembur,Lokasi/Catatan,Koordinat,Cabang Absen,Durasi Keluar (Menit),Jam Kerja Efektif\n";
       lastHrRekapData.forEach(row => {
-        csvContent += [esc(row.nik), esc(row.tanggal), esc(row.jamMasuk), esc(row.jamKeluar), esc(row.nama), esc(row.tipeMasuk), esc(row.tipeKeluar), esc(row.fotoUrl), esc(row.menitTerlambat), esc(row.menitPulangAwal), esc(row.menitLembur), esc(row.lokasi), esc(row.koordinat), esc(row.cabangAbsen), esc(row.durasiKeluarMenit), esc(row.jamKerjaEfektif)].join(",") + "\n";
+        csvContent += [esc(row.nik), esc(row.tanggal), esc(row.jamMasuk), esc(row.jamKeluar), esc(row.nama), esc(row.tipeMasuk), esc(row.tipeKeluar), esc(row.fotoUrl), esc(row.fotoPulangUrl), esc(row.menitTerlambat), esc(row.menitPulangAwal), esc(row.menitLembur), esc(row.lokasi), esc(row.koordinat), esc(row.cabangAbsen), esc(row.durasiKeluarMenit), esc(row.jamKerjaEfektif)].join(",") + "\n";
       });
     }
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -4781,7 +4795,7 @@ function renderTab1(container) {
   } else if (currentActiveMenu === 'Shift') {
     const today = getLocalDateString();
     let optKaryawan = '<option value="">Pilih Rekan</option>';
-    globalKaryawanList.filter(k => k.nik !== currentUser.nik).forEach(k => {
+    globalKaryawanList.filter(k => k.nik !== currentUser.nik && String(k.status || 'AKTIF').toUpperCase().trim() === 'AKTIF').forEach(k => {
       optKaryawan += `<option value="${escapeHtml(k.nik)}" data-nama="${escapeHtml(k.nama)}">${escapeHtml(k.nama)} (${escapeHtml(k.nik)})</option>`;
     });
     let optShift = '<option value="">Pilih Shift</option>';
@@ -5283,14 +5297,20 @@ function submitMyProfile(e) {
 // ============================================================
 function openDirectoryModal() {
   document.getElementById('directory-modal').classList.remove('hidden');
-  if (directoryData.length > 0) { renderDirectory(directoryData); return; }
-  document.getElementById('dir-list').innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Memuat...</p>';
+  const cached = getCached('directory');
+  if (cached) { directoryData = cached; filterDirectory(); return; }
+  const listEl = document.getElementById('dir-list');
+  listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Memuat...</p>';
   fetch(`${APPS_SCRIPT_URL}?action=getEmployeeDirectory`).then(r => r.json()).then(res => {
     if (res.status === 'success') {
-      directoryData = res.data;
-      setCached('directory', res.data, undefined, LONG_CACHE_TTL);
-      renderDirectory(directoryData);
+      directoryData = res.data || [];
+      setCached('directory', directoryData, undefined, LONG_CACHE_TTL);
+      filterDirectory();
+    } else {
+      listEl.innerHTML = `<p class="text-xs text-red-500 text-center py-4">${escapeHtml(res.message || 'Gagal memuat direktori.')}</p>`;
     }
+  }).catch(err => {
+    listEl.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error: ${escapeHtml(err.message)}</p>`;
   });
 }
 function closeDirectoryModal() { document.getElementById('directory-modal').classList.add('hidden'); }
@@ -5311,10 +5331,11 @@ function renderDirectory(list) {
       <div id="dir-avatar-${idx}" class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"></div>
       <div class="flex-1 min-w-0"><p class="text-xs font-bold text-slate-800 truncate">${escapeHtml(k.nama)}</p>
         <p class="text-[10px] text-slate-500 truncate">${escapeHtml(k.role)} · ${escapeHtml(k.cabang || '-')}</p>
-        ${k.telp ? `<p class="text-[9px] text-slate-400 truncate"><i class="fa-solid fa-phone"></i> ${escapeHtml(k.telp)}</p>` : ''}
+        ${k.telp ? `<p class="text-[10px] text-slate-500 truncate"><i class="fa-solid fa-phone text-[9px] mr-1"></i>${escapeHtml(k.telp)}</p>` : ''}
+        ${k.email ? `<p class="text-[10px] text-slate-500 truncate"><i class="fa-solid fa-envelope text-[9px] mr-1"></i>${escapeHtml(k.email)}</p>` : ''}
       </div>
       <div class="flex flex-col gap-1 flex-shrink-0">
-        ${k.telp ? `<a href="tel:${escapeHtml(k.telp)}" class="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-phone text-[10px]"></i></a>` : ''}
+        ${k.telp ? `<a href="tel:${escapeHtml(String(k.telp).replace(/[^0-9+]/g, ''))}" class="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-phone text-[10px]"></i></a>` : ''}
         ${k.email ? `<a href="mailto:${escapeHtml(k.email)}" class="w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-envelope text-[10px]"></i></a>` : ''}
       </div></div>`;
   });
@@ -5351,7 +5372,11 @@ function loadTeamCalendar(force) {
     if (res.status === 'success') {
       setCached('teamCalendar', res.data, ck, DEFAULT_CACHE_TTL);
       renderTeamCalendar(res.data);
+    } else {
+      container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">${escapeHtml(res.message || 'Gagal memuat kalender.')}</p>`;
     }
+  }).catch(err => {
+    container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error: ${escapeHtml(err.message)}</p>`;
   });
 }
 function renderTeamCalendar(data) {
@@ -5396,8 +5421,10 @@ function openKuotaCutiModal() {
     if (res.status === 'success') {
       setCached('kuotaCuti', res.data, currentUser.nik + '|' + tahun, DEFAULT_CACHE_TTL);
       renderKuotaCuti(res.data);
+    } else {
+      showToast(res.message || 'Gagal memuat kuota cuti.', 'error');
     }
-  });
+  }).catch(err => showToast('Error: ' + err.message, 'error'));
 }
 function renderKuotaCuti(d) {
   document.getElementById('kcm-sisa').innerText = d.sisa || 0;
@@ -5535,7 +5562,9 @@ function renderMyRekapAbsen(data, rekap, start, end) {
       const isLate = String(item.tipeMasuk || '').toLowerCase().indexOf('terlambat') !== -1;
       const badgeColor = isLate ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700';
       const fotoLink = item.fotoUrl && String(item.fotoUrl).indexOf('http') === 0
-        ? `<a href="#" data-private-file="${escapeHtml(item.fotoUrl)}" class="text-primary text-[9px] underline font-bold"><i class="fa-solid fa-camera"></i> Foto</a>` : '';
+        ? `<a href="#" data-private-file="${escapeHtml(item.fotoUrl)}" class="text-primary text-[9px] underline font-bold"><i class="fa-solid fa-camera"></i> Foto Masuk</a>` : '';
+      const fotoPulangLink = item.fotoPulangUrl && String(item.fotoPulangUrl).indexOf('http') === 0
+        ? `<a href="#" data-private-file="${escapeHtml(item.fotoPulangUrl)}" class="text-primary text-[9px] underline font-bold"><i class="fa-solid fa-camera"></i> Foto Pulang</a>` : '';
       let izinKeluarHtml = '';
       if (item.detailIzinKeluar && item.detailIzinKeluar.length > 0) {
         izinKeluarHtml = `<div class="mt-1 bg-white p-1.5 rounded border border-slate-200">
@@ -5567,7 +5596,7 @@ function renderMyRekapAbsen(data, rekap, start, end) {
           <span class="truncate"><i class="fa-solid fa-building text-[8px]"></i> ${escapeHtml(item.cabangAbsen || '-')}</span>
           <span class="truncate"><i class="fa-solid fa-location-dot text-[8px]"></i> ${escapeHtml(item.lokasi || '-')}</span>
           <span class="truncate"><i class="fa-solid fa-person-walking text-[8px]"></i> Keluar: ${item.durasiKeluarMenit || 0}m</span>
-          ${fotoLink}
+          ${fotoLink}${fotoPulangLink}
         </div>
       </div>`;
     });
