@@ -975,7 +975,7 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwdeztWsjHZzU4vABJmaLfol8PaVNSUv2XZMgfUq47y4FZTycxtzgYmf9jCpDCJpMG2hA/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKuZyu5qREt34jamiw-dGjsPdOvTNgknANyB51Z4W-51x8dXk-uS8cRhXTZMqGppv7Iw/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
@@ -2194,12 +2194,19 @@ function renderNightShiftNotice() {
   if (noticeHtml) statusDiv.insertAdjacentHTML('beforeend', noticeHtml);
 }
 
+let camEpoch = 0;
 function startCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { showToast("Kamera tidak tersedia. Buka aplikasi lewat HTTPS dan izinkan akses kamera.", 'error'); return; }
+  stopCamera();
+  const myEpoch = ++camEpoch;
   navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } })
-    .then(stream => { videoStream = stream; document.getElementById('webcam').srcObject = stream; })
+    .then(stream => {
+      if (myEpoch !== camEpoch) { stream.getTracks().forEach(t => t.stop()); return; }
+      videoStream = stream; document.getElementById('webcam').srcObject = stream;
+    })
     .catch(err => showToast("Gagal membuka kamera: " + err.message, 'error'));
 }
-function stopCamera() { if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; } }
+function stopCamera() { camEpoch++; if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; } }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
@@ -2727,7 +2734,7 @@ function openAbsenDetailModal(nik, kategori) {
       <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm"><i class="fa-regular fa-calendar text-primary text-sm"></i></div>
       <div>
         <p class="text-xs font-bold text-slate-800">${escapeHtml(formatDateDisplay(tanggalStr))}</p>
-        <p class="text-[10px] text-slate-500">Reguler</p>
+        <p class="text-[10px] text-slate-500">${escapeHtml(data.shiftName || "Reguler")}</p>
       </div>
     </div>
     <span class="bg-primary/10 text-primary text-[9px] font-bold px-2 py-0.5 rounded-full">${escapeHtml(data.jabatan || 'Karyawan')}</span>
@@ -2751,7 +2758,7 @@ function openAbsenDetailModal(nik, kategori) {
       ? `<a href="#" data-private-file="${escapeHtml(data.fotoUrl)}" class="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform" title="Lihat Foto"><i class="fa-solid fa-camera text-xs"></i></a>`
       : '';
     const mapsBtn = data.koordinat && data.koordinat !== '-'
-      ? `<a href="https://www.google.com/maps?q=${escapeHtml(data.koordinat)}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-white border border-slate-200 text-red-500 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform" title="Lihat Lokasi"><i class="fa-solid fa-location-dot text-xs"></i></a>`
+      ? `<a href="https://www.google.com/maps?q=${encodeURIComponent(data.koordinat)}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-white border border-slate-200 text-red-500 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform" title="Lihat Lokasi"><i class="fa-solid fa-location-dot text-xs"></i></a>`
       : '';
     const fotoPulangBtn = data.fotoPulangUrl && String(data.fotoPulangUrl).indexOf('http') === 0
       ? `<a href="#" data-private-file="${escapeHtml(data.fotoPulangUrl)}" class="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform" title="Lihat Foto Pulang"><i class="fa-solid fa-camera text-xs"></i></a>`
@@ -3202,11 +3209,11 @@ function loadAllSettingsHR(forceRefresh) {
     globalLemburRule = data.lemburRule;
     if (data.lemburRule) {
       document.getElementById('lembur-nama-aturan').value = data.lemburRule.namaAturan || "Aturan Standar Kantor";
-      document.getElementById('lembur-min-menit').value = data.lemburRule.minMenit || 30;
-      document.getElementById('lembur-pembulatan').value = data.lemburRule.pembulatan || 30;
-      document.getElementById('lembur-max-menit').value = data.lemburRule.maxMenit || 240;
+      document.getElementById('lembur-min-menit').value = (data.lemburRule.minMenit ?? 30);
+      document.getElementById('lembur-pembulatan').value = (data.lemburRule.pembulatan ?? 30);
+      document.getElementById('lembur-max-menit').value = (data.lemburRule.maxMenit ?? 240);
       document.getElementById('lembur-libur-opt').value = data.lemburRule.lemburLibur || "Ya";
-      document.getElementById('lembur-pengali').value = data.lemburRule.pengali || 1.5;
+      document.getElementById('lembur-pengali').value = (data.lemburRule.pengali ?? 1.5);
     }
     let optCabang = '<option value="">Pilih Cabang</option>';
     let htmlCabang = "";
@@ -3506,7 +3513,7 @@ function handleSaveHariLibur(e) {
   })}).then(r => r.json()).then(res => {
     showToast(res.message, res.status === 'success' ? 'success' : 'error');
     if (res.status === 'success') {
-      invalidateCache('hariLibur', 'teamCalendar');
+      invalidateCache('hariLibur', 'teamCalendar', 'jadwalShift');
       resetFormHariLibur();
       loadHariLiburHR(true);
     }
@@ -3517,7 +3524,7 @@ function deleteHariLibur(id) {
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deleteHariLibur", id })}).then(r => r.json()).then(res => {
     showToast(res.message, res.status === 'success' ? 'success' : 'error');
     if (res.status === 'success') {
-      invalidateCache('hariLibur', 'teamCalendar');
+      invalidateCache('hariLibur', 'teamCalendar', 'jadwalShift');
       loadHariLiburHR(true);
     }
   });
@@ -4019,7 +4026,7 @@ function downloadLaporanAbsensi() {
         let csvContent = "\uFEFF";
         csvContent += "=== DETAIL ABSENSI ===\n";
         csvContent += "NIK,Tanggal,Jam Masuk,Jam Keluar,Nama,Tipe Masuk,Tipe Keluar,Foto Masuk,Foto Pulang,Menit Terlambat,Menit Pulang Awal,Menit Lembur,Lokasi/Catatan,Koordinat,Cabang Absen,Durasi Keluar (Menit),Jam Kerja Efektif\n";
-        const esc = (v) => { const s = (v === null || v === undefined || v === "") ? "-" : String(v); return `"${s.replace(/"/g, '""')}"`; };
+        const esc = (v) => { let s = (v === null || v === undefined || v === "") ? "-" : String(v); if (/^[=@]/.test(s) || /^[+\-][A-Za-z(@=]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };
         res.data.forEach(row => {
           csvContent += [esc(row.nik), esc(row.tanggal), esc(row.jamMasuk), esc(row.jamKeluar), esc(row.nama), esc(row.tipeMasuk), esc(row.tipeKeluar), esc(row.fotoUrl), esc(row.fotoPulangUrl), esc(row.menitTerlambat), esc(row.menitPulangAwal), esc(row.menitLembur), esc(row.lokasi), esc(row.koordinat), esc(row.cabangAbsen), esc(row.durasiKeluarMenit), esc(row.jamKerjaEfektif)].join(",") + "\n";
         });
@@ -4038,7 +4045,7 @@ function downloadLaporanAbsensi() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
         showToast("Laporan berhasil diunduh", 'success');
       } else showToast("Tidak ada data untuk rentang tanggal tersebut.", 'warning');
     }).catch(err => showToast("Gagal: " + err.message, 'error'))
@@ -4219,7 +4226,7 @@ function downloadRekapAbsensiHRCSV() {
   setLoading(btn, true);
   setTimeout(() => {
     let csvContent = "\uFEFF";
-    const esc = (v) => { const s = (v === null || v === undefined || v === "") ? "-" : String(v); return `"${s.replace(/"/g, '""')}"`; };
+    const esc = (v) => { let s = (v === null || v === undefined || v === "") ? "-" : String(v); if (/^[=@]/.test(s) || /^[+\-][A-Za-z(@=]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };
     if (lastHrRekapSummary.length > 0) {
       csvContent += "=== REKAP PER KARYAWAN ===\n";
       csvContent += "NIK,Nama,Total Hadir,Hari Terlambat,Total Menit Terlambat,Hari Pulang Awal,Total Menit Pulang Awal,Total Menit Lembur,Total Durasi Keluar (Menit),Total Jam Kerja\n";
@@ -4243,7 +4250,7 @@ function downloadRekapAbsensiHRCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     setLoading(btn, false);
     showToast("Rekap berhasil diunduh", 'success');
   }, 300);
@@ -4307,7 +4314,11 @@ function loadOffboardingHR(force) {
     if (res.status === 'success') {
       setCached('offboarding', res.data || [], undefined, DEFAULT_CACHE_TTL);
       renderOffboardingHR(res.data);
+    } else {
+      container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">' + escapeHtml(res.message || 'Gagal memuat offboarding') + '</p>';
     }
+  }).catch(err => {
+    container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">Error: ' + escapeHtml(err.message) + '</p>';
   });
 }
 
@@ -5064,7 +5075,11 @@ function loadSlipGajiList(force) {
       globalSlipList = res.data;
       setCached('slipGajiList', res.data, ck, DEFAULT_CACHE_TTL);
       renderSlipGajiList(res.data, container);
+    } else {
+      container.innerHTML = '<div class="text-center py-6 text-xs text-red-500">' + escapeHtml(res.message || 'Gagal memuat slip gaji') + '</div>';
     }
+  }).catch(err => {
+    container.innerHTML = '<div class="text-center py-6 text-xs text-red-500">Gagal memuat slip gaji: ' + escapeHtml(err.message) + '</div>';
   });
 }
 
