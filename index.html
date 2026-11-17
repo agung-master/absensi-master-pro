@@ -975,7 +975,7 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqakVOtSE-IQ50WEkL94gCR_3Xj6B8mN2hvfMjp3zM5OPxTbw_ho1zPu-stgyqxXMgYQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGIzOe9WN4E9hpKqvcAFVoYdODbTu9YTgF1C2SMKNcpzT-ZxwCDIDkT7R_1Fa41g55Rw/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
@@ -2416,10 +2416,11 @@ function submitAbsenMode(tipeAction) {
         if (currentUser.isHr) loadFilteredSummary(true);
         loadMyAttendance(true);
         // ✅ FIX: gunakan state lokal — TIDAK refetch getMyTodayStatus
-        if (todayStatusDataLocal) {
+        if (todayStatusDataLocal && !(tipeAction === 'Pulang' && todayStatusDataLocal.isFromYesterday)) {
           setCached('todayStatus', todayStatusDataLocal, undefined, SHORT_CACHE_TTL);
           applyTodayStatusUI(todayStatusDataLocal);
         } else {
+          todayStatusCache = null; todayStatusDataLocal = null;
           refreshIzinKeluarButtonState(true);
         }
       }, 500);
@@ -4608,7 +4609,7 @@ function submitFormReimburse(e) {
       })}).then(res => res.json()).then(res => {
         showToast(res.message, res.status === 'success' ? 'success' : 'error');
         if (res.status === 'success') {
-          invalidateCache('pendingApprovals', 'myRequests');
+          invalidateCache('pendingApprovals', 'myRequests', 'myReimburse');
           closeGenericModal();
         }
       }).finally(() => setLoading(btn, false));
@@ -4642,7 +4643,7 @@ function submitFormShift(e) {
   })}).then(res => res.json()).then(res => {
     showToast(res.message, res.status === 'success' ? 'success' : 'error');
     if (res.status === 'success') {
-      invalidateCache('pendingApprovals', 'myRequests');
+      invalidateCache('pendingApprovals', 'myRequests', 'myShiftRequests');
       switchModalTab(2);
     }
   }).finally(() => setLoading(btn, false));
@@ -5433,7 +5434,7 @@ function renderTeamCalendar(data) {
     html += `<div class="border ${bgClass} rounded-lg p-1 min-h-[52px] flex flex-col">
       <p class="text-[10px] font-bold ${isHoliday ? 'text-red-600' : 'text-slate-700'} text-center">${d}</p>
       ${isHoliday ? `<p class="text-[7px] text-red-500 truncate leading-tight">${escapeHtml(holiday.nama)}</p>` : ''}
-      ${leaves.length > 0 ? `<p class="text-[7px] text-amber-600 font-bold text-center">${leaves.length} cuti</p>` : ''}
+      ${leaves.length > 0 ? `<p class="text-[7px] text-amber-600 font-bold text-center">${leaves.length} izin/cuti</p>` : ''}
     </div>`;
   }
   html += '</div>';
@@ -5687,7 +5688,11 @@ function submitKoreksiAbsen(e) {
   } else send("");
 }
 
-function openResignModal() { document.getElementById('resign-modal').classList.remove('hidden'); }
+function openResignModal() {
+  const rt = document.getElementById('res-tanggal');
+  if (rt) { rt.min = getLocalDateString(); if (!rt.value || rt.value < rt.min) rt.value = rt.min; }
+  document.getElementById('resign-modal').classList.remove('hidden');
+}
 function closeResignModal() { document.getElementById('resign-modal').classList.add('hidden'); }
 
 function submitResign(e) {
