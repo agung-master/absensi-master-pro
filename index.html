@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0073B7">
 <title>Aplikasi Absensi & HRIS Pro</title>
 <meta name="author" content="Agung Prakosa">
@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#0073B7',secondary:'#f8fafc'}}}}</script>
 <style>
 body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f1f5f9;}
@@ -57,6 +57,32 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 .truncate{max-width:100%;}
 @media (max-width:380px){ .toast{font-size:11px;padding:10px 12px;} }
 @media (min-width:1024px){ input:focus,select:focus,textarea:focus{outline:2px solid rgba(0,115,183,.35);outline-offset:1px;} }
+
+/* ===== PERBAIKAN TAMPILAN & RESPONSIF (laptop + HP) ===== */
+:root{--brand:#0073B7;--brand-dark:#005a91;}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+button,a,[role="button"]{touch-action:manipulation;}
+img,video,canvas,svg{max-width:100%;}
+#app-shell,#modal-content{overflow-wrap:break-word;}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:8px;}
+#toast-container{top:calc(12px + env(safe-area-inset-top,0px));}
+.toast{line-height:1.35;word-break:break-word;}
+#bottom-nav{left:50%;transform:translateX(-50%);border-top:1px solid #e2e8f0;}
+#bottom-nav > button{min-height:44px;}
+#bottom-nav > button:active{transform:scale(.94);}
+@media (max-width:767px){
+  input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px !important;}
+  #bottom-nav{padding-left:1.25rem;padding-right:1.25rem;}
+  #modal-content{padding-bottom:calc(5rem + env(safe-area-inset-bottom,0px));}
+}
+@media (min-width:768px){
+  #bottom-nav{justify-content:center;gap:6rem;border-radius:1.25rem 1.25rem 0 0;}
+  #app-shell{border-radius:0;}
+  .custom-scroll::-webkit-scrollbar{height:8px;width:8px;}
+}
+@media (min-width:1280px){ body{background:linear-gradient(180deg,#e2e8f0,#f1f5f9);} }
+@media (max-height:480px) and (orientation:landscape){ #bottom-nav{padding-top:.25rem;padding-bottom:calc(.25rem + env(safe-area-inset-bottom,0px));} }
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
 </style>
 </head>
 <body class="flex justify-center min-h-screen bg-slate-100 overflow-x-hidden">
@@ -975,7 +1001,7 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAHWWKru-34CrNVd6f7Emhz68CpYq8Lo5IZQ7SgcqAZ8rGOTVNRw3n0ULRq2HgsWQ90A/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxGjNBxeSFIGgtYRONWWpqe_V6UXq0pniPXONDgQjeYq01keGCf8b_s1wBObO5F5RHBQ/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
@@ -992,8 +1018,16 @@ const SESSION_TOKEN_KEY = 'absenPro_session';
   }
   document.addEventListener('DOMContentLoaded', fill);
 })();
+let _lastRejToast = 0;
 window.addEventListener('unhandledrejection', function(ev) {
-  try { ev.preventDefault(); showToast('Koneksi bermasalah atau server tidak merespons. Silakan coba lagi.', 'error'); } catch (e) {}
+  try {
+    ev.preventDefault();
+    console.error('Unhandled rejection:', ev.reason);
+    const now = Date.now();
+    if (now - _lastRejToast < 5000) return;   // cegah toast beruntun
+    _lastRejToast = now;
+    showToast('Koneksi bermasalah atau server tidak merespons. Silakan coba lagi.', 'error');
+  } catch (e) {}
 });
 
 // ============================================================
@@ -2087,7 +2121,7 @@ function openAbsenModal() {
         settingsP.then(() => getLocationAndVerifyGeofence());
       },
       () => settingsP.then(() => getLocationAndVerifyGeofence()),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   }
 }
@@ -2319,7 +2353,7 @@ function getLocationAndVerifyGeofence() {
       applyAbsenButtonState();
       renderNightShiftNotice();
     },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
   );
 }
 
@@ -2859,6 +2893,7 @@ function renderAttendanceChart(data) {
     return;
   }
   if (attendanceChartInstance) { attendanceChartInstance.destroy(); attendanceChartInstance = null; }
+  if (typeof Chart === 'undefined') { showToast('Grafik belum termuat. Periksa koneksi lalu muat ulang halaman.', 'warning'); return; }
   attendanceChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -4264,8 +4299,10 @@ function loadAnalytics() {
   const start = document.getElementById('analytics-start').value;
   const end = document.getElementById('analytics-end').value;
   if (!start || !end) { showToast("Pilih rentang tanggal!", 'warning'); return; }
-  fetch(`${APPS_SCRIPT_URL}?action=getDashboardAnalytics&startDate=${start}&endDate=${end}`).then(r => r.json()).then(res => {
-    if (res.status !== 'success') return;
+  if (start > end) { showToast("Tanggal mulai tidak boleh setelah tanggal akhir!", 'warning'); return; }
+  if (typeof Chart === 'undefined') { showToast('Grafik belum termuat. Periksa koneksi lalu muat ulang halaman.', 'warning'); return; }
+  fetch(`${APPS_SCRIPT_URL}?action=getDashboardAnalytics&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`).then(r => r.json()).then(res => {
+    if (res.status !== 'success') { showToast(res.message || 'Gagal memuat analitik.', 'error'); return; }
     const d = res.data;
     if (analyticsCharts.trend) analyticsCharts.trend.destroy();
     const trendCtx = document.getElementById('chart-trend');
@@ -4485,7 +4522,7 @@ function getLocationForActivity() {
           .finally(() => setLoading(btn, false));
       },
       err => { showToast("Gagal GPS: " + err.message, 'error'); setLoading(btn, false); },
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   } else { showToast("GPS tidak didukung", 'error'); setLoading(btn, false); }
 }
