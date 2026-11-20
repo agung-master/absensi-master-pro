@@ -233,9 +233,14 @@ body.nav-solo #bottom-nav{justify-content:center;}
   body:not(.nav-solo) #bottom-nav button:focus-visible{outline-color:#fff;}
   /* bagian bawah: tombol keluar + versi */
   body:not(.nav-solo) .nav-foot{display:flex;flex-direction:column;align-items:center;gap:.5rem;margin-top:auto;width:4.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.14);}
-  .nav-logout{display:flex;flex-direction:column;align-items:center;gap:.25rem;width:100%;padding:.55rem 0;border-radius:.9rem;color:rgba(255,255,255,.75);font-size:.62rem;font-weight:800;transition:background .15s,color .15s;}
-  .nav-logout i{font-size:1.1rem;}
-  .nav-logout:hover{background:rgba(220,38,38,.3);color:#fff;}
+  .nav-tools{display:grid;grid-template-columns:repeat(2,2rem);gap:.4rem;justify-content:center;}
+  .nav-tool{position:relative;width:2rem;height:2rem;border-radius:.65rem;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);color:rgba(255,255,255,.82);font-size:.85rem;transition:background .15s,color .15s;}
+  .nav-tool:hover{background:rgba(255,255,255,.2);color:#fff;}
+  .nav-tool-out:hover{background:rgba(220,38,38,.5);}
+  .nav-badge{position:absolute;top:-.35rem;right:-.35rem;box-sizing:border-box;min-width:1rem;height:1rem;padding:0 .2rem;border-radius:9999px;background:#ef4444;color:#fff;border:2px solid #0a4f7e;font-size:.52rem;font-weight:800;line-height:.75rem;text-align:center;}
+  .nav-badge.hidden{display:none;}
+  /* tombol info/password/notifikasi/keluar di header pindah ke sidebar (hanya jika sidebar tampil) */
+  body:not(.nav-solo) #header-actions{display:none;}
   .nav-foot small{font-size:.58rem;color:rgba(255,255,255,.45);}
 }
 @media (min-width:1024px) and (max-height:620px){
@@ -835,7 +840,12 @@ body.nav-solo #bottom-nav{justify-content:center;}
   </div>
   <button id="nav-btn-hr" onclick="switchTab('hr-panel')" class="flex flex-col items-center justify-center w-16 text-slate-400 hover:text-primary transition-colors"><i class="fa-solid fa-user-shield text-xl mb-1"></i><span class="text-[10px] font-bold">HR PANEL</span></button>
   <div class="nav-foot">
-    <button type="button" onclick="handleLogout()" class="nav-logout" title="Keluar dari akun"><i class="fa-solid fa-power-off"></i><span>KELUAR</span></button>
+    <div class="nav-tools">
+      <button type="button" onclick="openGenericModal('Pengumuman')" class="nav-tool" title="Pengumuman" aria-label="Pengumuman"><i class="fa-regular fa-bell"></i><span id="nav-notif-badge" class="nav-badge hidden">0</span></button>
+      <button type="button" onclick="openChangePasswordModal()" class="nav-tool" title="Ganti Password" aria-label="Ganti Password"><i class="fa-solid fa-key"></i></button>
+      <button type="button" onclick="openAboutModal()" class="nav-tool" title="Tentang Aplikasi" aria-label="Tentang Aplikasi"><i class="fa-solid fa-circle-info"></i></button>
+      <button type="button" onclick="handleLogout()" class="nav-tool nav-tool-out" title="Keluar dari akun" aria-label="Keluar dari akun"><i class="fa-solid fa-power-off"></i></button>
+    </div>
     <small>Versi 1.0</small>
   </div>
 </div>
@@ -1864,18 +1874,19 @@ function checkUnreadPengumuman(force) {
 }
 
 function renderNotifBadge(count) {
-  const badge = document.getElementById('notif-badge');
-  if (!badge) return;
+  const badges = document.querySelectorAll('#notif-badge, #nav-notif-badge');
+  if (!badges.length) return;
   const c = Number(count) || 0;
-  if (c > 0) { badge.innerText = c; badge.classList.remove('hidden'); }
-  else badge.classList.add('hidden');
+  badges.forEach(function(badge) {
+    if (c > 0) { badge.innerText = c; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  });
 }
 
 function markPengumumanAsRead() {
   if (globalPengumumanList.length > 0) {
     localStorage.setItem('read_announcements_' + currentUser.nik, JSON.stringify(globalPengumumanList.map(p => p.id + '_' + p.tgl)));
-    const badge = document.getElementById('notif-badge');
-    if (badge) badge.classList.add('hidden');
+    document.querySelectorAll('#notif-badge, #nav-notif-badge').forEach(function(b) { b.classList.add('hidden'); });
     invalidateCache('pengumumanUnread');
     setCached('pengumumanUnread', 0, undefined, DEFAULT_CACHE_TTL);
   }
