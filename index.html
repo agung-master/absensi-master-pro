@@ -123,6 +123,22 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
   #header-clock .hc-date{margin-top:.3rem;font-size:.68rem;}
 }
 @media (max-width:359px){ #header-clock .hc-time{font-size:1.05rem;padding:.25rem .6rem .3rem;} #header-clock .hc-date{font-size:.62rem;} }
+
+/* ===== HEADER: hilangkan tumpang-tindih -mt-8 & jarak berlebih di bawah jam ===== */
+#app-header{padding-bottom:1.5rem;}
+#app-header + div{margin-top:.9rem;}
+@media (max-width:767px){ #app-header{padding-bottom:1.1rem;} #app-header + div{margin-top:.75rem;} }
+/* ===== BARIS PILL/TAB + PANAH: sejajar tengah, tidak berdempetan ===== */
+#pill-container,#hrtab-container{padding-left:2.6rem;padding-right:2.6rem;padding-bottom:.5rem;scroll-padding-inline:2.6rem;scrollbar-width:thin;}
+#app-shell button[onclick^="scrollContainer("]{top:0;bottom:.5rem;margin-top:auto;margin-bottom:auto;width:1.85rem;height:1.85rem;padding:0;border-radius:9999px;
+  background:#fff;border:1px solid #cbd5e1;color:#475569;box-shadow:0 1px 4px rgba(15,23,42,.14);transition:background .15s,color .15s,transform .15s;}
+#app-shell button[onclick^="scrollContainer("] i{font-size:.7rem;line-height:1;}
+#app-shell button[onclick^="scrollContainer("]:hover{background:#0073B7;border-color:#0073B7;color:#fff;}
+#app-shell button[onclick^="scrollContainer("]:active{transform:scale(.92);}
+@media (hover:none) and (pointer:coarse){
+  #app-shell button[onclick^="scrollContainer("]{display:none;}
+  #pill-container,#hrtab-container{padding-left:.25rem;padding-right:.25rem;scroll-padding-inline:.25rem;}
+}
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
 </style>
 </head>
