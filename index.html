@@ -15,6 +15,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#0073B7',secondary:'#f8fafc'}}}}</script>
@@ -139,6 +141,69 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
   #app-shell button[onclick^="scrollContainer("]{display:none;}
   #pill-container,#hrtab-container{padding-left:.25rem;padding-right:.25rem;scroll-padding-inline:.25rem;}
 }
+
+/* ===== FONT, SKALA TEKS, TATA LETAK LAPTOP, DIALOG ===== */
+body,button,input,select,textarea{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;}
+body .text-\[7px\],body .text-\[8px\]{font-size:10px;}
+body .text-\[9px\]{font-size:10.5px;}
+body .text-\[10px\]{font-size:11px;}
+body .text-\[11px\]{font-size:11.5px;}
+.hdr-greet{font-size:.7rem;font-weight:600;color:#bfdbfe;line-height:1.2;margin-bottom:.1rem;}
+@media (min-width:1024px){
+  #app-shell{padding-left:6rem;padding-bottom:0;}
+  #app-shell .max-w-3xl{max-width:62rem;}
+  #bottom-nav{top:0;bottom:0;left:max(0px,calc(50% - 36rem));transform:none;width:6rem;max-width:6rem;flex-direction:column;justify-content:flex-start;align-items:center;
+    gap:1.5rem;padding:2rem .5rem;border-radius:0;border-top:0;border-right:1px solid #e2e8f0;box-shadow:none;}
+  #bottom-nav > div.relative{top:0;margin-bottom:1.25rem;}
+  #bottom-nav > button{width:4.5rem;border-radius:.9rem;padding:.6rem 0;}
+  #bottom-nav > button:hover{background:#f1f5f9;}
+}
+.ui-dlg-back{position:fixed;inset:0;z-index:10050;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:1rem;animation:dlgFade .15s ease;}
+.ui-dlg{background:#fff;width:100%;max-width:23rem;border-radius:1.25rem;padding:1.4rem 1.25rem 1.1rem;box-shadow:0 25px 60px rgba(15,23,42,.35);}
+.ui-dlg .ic{width:2.75rem;height:2.75rem;border-radius:9999px;display:flex;align-items:center;justify-content:center;margin-bottom:.8rem;background:#e0f2fe;color:#0073B7;font-size:1.1rem;}
+.ui-dlg.danger .ic{background:#fee2e2;color:#dc2626;}
+.ui-dlg h3{font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:.35rem;}
+.ui-dlg p{font-size:.85rem;color:#475569;white-space:pre-line;line-height:1.45;}
+.ui-dlg input{width:100%;margin-top:.8rem;padding:.7rem .9rem;border:1px solid #cbd5e1;border-radius:.75rem;background:#f8fafc;font-size:16px;}
+.ui-dlg input:focus{outline:2px solid rgba(0,115,183,.4);border-color:#0073B7;}
+.ui-dlg .act{display:flex;gap:.6rem;margin-top:1.1rem;}
+.ui-dlg .act button{flex:1;padding:.7rem;border-radius:.75rem;font-weight:700;font-size:.85rem;}
+.ui-dlg .no{background:#f1f5f9;color:#475569;}
+.ui-dlg .ok{background:#0073B7;color:#fff;}
+.ui-dlg.danger .ok{background:#dc2626;}
+@keyframes dlgFade{from{opacity:0}to{opacity:1}}
+
+/* ===== TOKEN STATUS (dipakai konsisten) & SKALA RADIUS ===== */
+:root{--st-ok:#059669;--st-ok-bg:#d1fae5;--st-warn:#d97706;--st-warn-bg:#fef3c7;--st-bad:#dc2626;--st-bad-bg:#fee2e2;--st-info:#0073B7;--st-info-bg:#e0f2fe;--st-mute:#64748b;--st-mute-bg:#f1f5f9;--st-off:#7c3aed;--st-off-bg:#ede9fe;
+  --r-ctl:.75rem;--r-card:1rem;--r-sheet:1.5rem;}
+body .rounded-lg{border-radius:var(--r-ctl);}
+body .rounded-xl{border-radius:var(--r-ctl);}
+body .rounded-2xl{border-radius:var(--r-card);}
+body .rounded-\[2rem\]{border-radius:var(--r-sheet);}
+@media (min-width:768px){ body .md\:rounded-\[2rem\]{border-radius:var(--r-sheet);} }
+/* ===== KARTU STATUS HARI INI ===== */
+.tc{--c:var(--st-info);--cb:var(--st-info-bg);background:#fff;border:1px solid #e2e8f0;border-left:4px solid var(--c);border-radius:var(--r-card);padding:.9rem;box-shadow:0 1px 3px rgba(15,23,42,.06);display:flex;flex-direction:column;gap:.75rem;height:100%;}
+.tc-kerja{--c:var(--st-ok);--cb:var(--st-ok-bg);} .tc-belum{--c:var(--st-warn);--cb:var(--st-warn-bg);} .tc-izin{--c:var(--st-info);--cb:var(--st-info-bg);}
+.tc-selesai{--c:var(--st-mute);--cb:var(--st-mute-bg);} .tc-libur{--c:var(--st-off);--cb:var(--st-off-bg);}
+.tc-top{display:flex;align-items:center;gap:.7rem;min-width:0;}
+.tc-ic{width:2.5rem;height:2.5rem;flex:none;border-radius:9999px;background:var(--cb);color:var(--c);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.tc-ti{font-weight:800;font-size:.95rem;color:#0f172a;line-height:1.2;} .tc-su{font-size:.75rem;color:#64748b;margin-top:.15rem;line-height:1.3;}
+.tc-times{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+.tc-times > div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--r-ctl);padding:.5rem .7rem;display:flex;flex-direction:column;gap:.1rem;}
+.tc-times span{font-size:.68rem;font-weight:600;color:#64748b;} .tc-times b{font-size:1.1rem;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;}
+.tc-btn{width:100%;padding:.7rem;border-radius:var(--r-ctl);background:var(--c);color:#fff;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;gap:.5rem;box-shadow:0 2px 8px rgba(15,23,42,.15);}
+.tc-btn:active{transform:scale(.98);}
+.tc-note{font-size:.72rem;font-weight:600;color:var(--st-warn);background:var(--st-warn-bg);border-radius:var(--r-ctl);padding:.5rem .65rem;display:flex;gap:.4rem;align-items:flex-start;}
+/* ===== LAPTOP: Beranda 2 kolom + modal sebagai panel samping ===== */
+@media (min-width:1024px){
+  #beranda-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem;align-items:stretch;}
+  #beranda-body > *{grid-column:1 / -1;margin:0;}
+  #beranda-body > #today-card,#beranda-body > #karyawan-keluar-box{grid-column:auto;}
+  #hr-sec-dashboard .relative.h-\[200px\]{height:280px;}
+  #generic-modal{justify-content:flex-end;align-items:stretch;padding:0;}
+  #generic-modal > div{height:100%;max-height:100%;max-width:40rem;width:100%;margin:0;border-radius:var(--r-sheet) 0 0 var(--r-sheet);animation:sheetIn .22s ease-out;}
+}
+@keyframes sheetIn{from{transform:translateX(2rem);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
 </style>
 </head>
@@ -185,7 +250,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
         <div id="user-avatar-container" class="w-12 h-12 rounded-full overflow-hidden border-2 border-white/50 shadow-md flex items-center justify-center bg-white/20 backdrop-blur-sm flex-shrink-0">
           <i class="fa-solid fa-user text-xl"></i>
         </div>
-        <div class="min-w-0 flex-1"><h2 id="user-name" class="font-bold text-lg leading-tight truncate">Nama User</h2>
+        <div class="min-w-0 flex-1"><p id="hdr-greet" class="hdr-greet">&nbsp;</p><h2 id="user-name" class="font-bold text-lg leading-tight truncate">Nama User</h2>
           <p id="user-role" class="text-xs text-blue-100 truncate">Role</p></div>
       </div>
       <div id="header-clock" aria-hidden="true">
@@ -204,7 +269,8 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
     </div>
   </div>
 
-  <div class="px-4 -mt-8 space-y-6 bg-white flex-1 pb-10 max-w-3xl mx-auto w-full">
+  <div id="beranda-body" class="px-4 -mt-8 space-y-6 bg-white flex-1 pb-10 max-w-3xl mx-auto w-full">
+    <div id="today-card"><div class="tc skeleton" style="min-height:9.5rem"></div></div>
     <div id="karyawan-keluar-box" class="bg-blue-50/70 border border-blue-100 p-3.5 rounded-2xl shadow-sm space-y-2">
       <p class="text-[11px] font-extrabold text-primary flex items-center gap-1.5"><i class="fa-solid fa-person-walking-arrow-right"></i> Kontrol Keluar Kantor</p>
       <div class="grid grid-cols-2 gap-2">
@@ -1064,7 +1130,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxGjNBxeSFIGgtYRONWWpqe_V6UXq0pniPXONDgQjeYq01keGCf8b_s1wBObO5F5RHBQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjVBr1Fr8uAv2Lyw5omTRzlkfs_e1doYjdlrpo-YVha7cei8Zk0bxVuQoPL05qz1oHZQ/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
@@ -1291,7 +1357,7 @@ function showToast(msg, type) {
   const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
   const div = document.createElement('div');
   div.className = 'toast ' + type;
-  div.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i><span>' + escapeHtml(msg) + '</span>';
+  div.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i><span>' + escapeHtml(String(msg).replace(/^[\s\u2705\u274C\u26A0\uFE0F\u2139\u{1F6A8}\u{1F512}]+/u,'')) + '</span>';
   container.appendChild(div);
   setTimeout(() => { div.style.opacity = '0'; div.style.transform = 'translateY(-10px)'; div.style.transition = 'all 0.3s'; setTimeout(() => div.remove(), 300); }, 3500);
 }
@@ -1697,10 +1763,10 @@ function renderMyAttendance(d) {
   document.getElementById('my-attendance-bar').style.width = rate + "%";
   let desc = "Belum ada data"; let barColor = "bg-primary";
   if (totalHariKerja > 0) {
-    if (rate >= 95) { desc = "Sangat Baik 🌟"; barColor = "bg-emerald-500"; }
-    else if (rate >= 80) { desc = "Baik 👍"; barColor = "bg-primary"; }
-    else if (rate >= 60) { desc = "Cukup ⚠️"; barColor = "bg-amber-500"; }
-    else { desc = "Perlu Peningkatan 📉"; barColor = "bg-red-500"; }
+    if (rate >= 95) { desc = "Sangat Baik"; barColor = "bg-emerald-500"; }
+    else if (rate >= 80) { desc = "Baik"; barColor = "bg-primary"; }
+    else if (rate >= 60) { desc = "Cukup"; barColor = "bg-amber-500"; }
+    else { desc = "Perlu Peningkatan"; barColor = "bg-red-500"; }
   }
   document.getElementById('my-attendance-bar').className = barColor + " h-2 rounded-full transition-all duration-500";
   document.getElementById('my-performance-desc').innerText = desc;
@@ -1760,6 +1826,7 @@ function refreshIzinKeluarButtonState(force) {
 }
 
 function applyTodayStatusUI(s) {
+  try { renderTodayCard(s); } catch (e) { console.warn('renderTodayCard:', e); }
   const btnKeluar = document.getElementById('btn-izin-keluar');
   const btnKembali = document.getElementById('btn-izin-kembali');
   if (!btnKeluar || !btnKembali) return;
@@ -1859,9 +1926,9 @@ function submitIzinKeluarForm(e) {
         closeIzinKeluarModal();
         invalidateCache('todayStatus', 'myIzinKeluarHistory');
         refreshIzinKeluarButtonState(true);
-      } else { errEl.innerText = "❌ " + res2.message; errEl.classList.remove('hidden'); }
+      } else { errEl.innerText = "" + res2.message; errEl.classList.remove('hidden'); }
     })
-    .catch(err => { errEl.innerText = "❌ Koneksi bermasalah, coba lagi. (" + err.message + ")"; errEl.classList.remove('hidden'); })
+    .catch(err => { errEl.innerText = "Koneksi bermasalah, coba lagi. (" + err.message + ")"; errEl.classList.remove('hidden'); })
     .finally(() => setLoading(btn, false, 'Konfirmasi Izin Keluar'));
 }
 
@@ -1887,9 +1954,9 @@ function submitIzinKembaliForm(e) {
         closeIzinKembaliModal();
         invalidateCache('todayStatus', 'myIzinKeluarHistory');
         refreshIzinKeluarButtonState(true);
-      } else { errEl.innerText = "❌ " + res2.message; errEl.classList.remove('hidden'); }
+      } else { errEl.innerText = "" + res2.message; errEl.classList.remove('hidden'); }
     })
-    .catch(err => { errEl.innerText = "❌ Koneksi bermasalah, coba lagi. (" + err.message + ")"; errEl.classList.remove('hidden'); })
+    .catch(err => { errEl.innerText = "Koneksi bermasalah, coba lagi. (" + err.message + ")"; errEl.classList.remove('hidden'); })
     .finally(() => setLoading(btn, false, 'Konfirmasi Kembali'));
 }
 
@@ -2202,6 +2269,7 @@ function resetAbsenButtons() {
 
 // ✅ FIX #4: cache DOM (sudah diinisialisasi di atas)
 function applyAbsenButtonState() {
+  try { if (typeof todayStatusCache !== 'undefined' && todayStatusCache) renderTodayCard(todayStatusCache); } catch (e) {}
   const bm = _btnMasuk();
   const bp = _btnPulang();
   if (!bm || !bp) return;
@@ -2363,7 +2431,7 @@ function getLocationAndVerifyGeofence() {
 
       let accuracyWarning = "";
       if (pos.coords.accuracy && pos.coords.accuracy > 100) {
-        accuracyWarning = `<br><span class="text-amber-600 text-[10px]">⚠️ Akurasi GPS rendah (${Math.round(pos.coords.accuracy)}m).</span>`;
+        accuracyWarning = `<br><span class="text-amber-600 text-[10px]"><i class="fa-solid fa-triangle-exclamation"></i> Akurasi GPS rendah (${Math.round(pos.coords.accuracy)}m).</span>`;
       }
       userLocation = `${userLat.toFixed(5)}, ${userLng.toFixed(5)}`;
       userAccuracy = Math.round(pos.coords.accuracy || 0);
@@ -3126,8 +3194,8 @@ function confirmLemburApprove() {
     }).catch(err => showToast('Error: ' + err.message, 'error'));
 }
 
-function processLemburReject(row, btnEl) {
-  if (!confirm("Tolak pengajuan lembur ini?")) return;
+async function processLemburReject(row, btnEl) {
+  if (!(await uiConfirm("Tolak pengajuan lembur ini?"))) return;
   if (btnEl) setLoading(btnEl, true);
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "processPengajuanLembur", id: row, status: "REJECTED", menitApproved: 0, catatanHR: "Ditolak HR" }) })
     .then(res => res.json()).then(res => {
@@ -3158,8 +3226,8 @@ function processReq(row, status, btnEl) {
     .finally(() => { if (btnEl) setLoading(btnEl, false); });
 }
 
-function processKoreksi(rowIndex, status, btnEl) {
-  const catatanIn = prompt("Catatan HR (opsional):", "-");
+async function processKoreksi(rowIndex, status, btnEl) {
+  const catatanIn = await uiPrompt("Catatan HR (opsional):", "-");
   if (catatanIn === null) return;
   const catatan = catatanIn || "-";
   if (btnEl) setLoading(btnEl, true);
@@ -3175,14 +3243,14 @@ function processKoreksi(rowIndex, status, btnEl) {
     .finally(() => { if (btnEl) setLoading(btnEl, false); });
 }
 
-function processResignHR(rowIndex, status) {
-  const catatanIn = prompt("Catatan HR:", status === 'APPROVED' ? "Disetujui." : "Ditolak.");
+async function processResignHR(rowIndex, status) {
+  const catatanIn = await uiPrompt("Catatan HR:", status === 'APPROVED' ? "Disetujui." : "Ditolak.");
   if (catatanIn === null) return;
   const catatan = catatanIn || "-";
   const pesanKonfirmasi = status === 'APPROVED'
     ? 'Yakin SETUJUI pengajuan ini?\n\nAkun karyawan TETAP AKTIF dan baru dinonaktifkan otomatis pada tanggal efektif resign.'
     : 'Yakin TOLAK pengajuan ini?';
-  if (!confirm(pesanKonfirmasi)) return;
+  if (!(await uiConfirm(pesanKonfirmasi))) return;
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "processResign", id: rowIndex, status, catatanHR: catatan }) })
     .then(r => r.json()).then(res => {
       showToast(res.message, res.status === 'success' ? 'success' : 'error');
@@ -3195,11 +3263,11 @@ function processResignHR(rowIndex, status) {
     }).catch(err => showToast('Error: ' + err.message, 'error'));
 }
 
-function processReimburseApproval(row, status, btnEl) {
-  const catatanIn = status === "REJECTED" ? prompt("Alasan penolakan (opsional):", "Ditolak HR") : prompt("Catatan HR (opsional):", "Disetujui.");
+async function processReimburseApproval(row, status, btnEl) {
+  const catatanIn = status === "REJECTED" ? await uiPrompt("Alasan penolakan (opsional):", "Ditolak HR") : await uiPrompt("Catatan HR (opsional):", "Disetujui.");
   if (catatanIn === null) return;
   const catatan = catatanIn || "-";
-  if (!confirm(`Yakin ${status === 'APPROVED' ? 'SETUJUI' : 'TOLAK'} reimburse ini?`)) return;
+  if (!(await uiConfirm(`Yakin ${status === 'APPROVED' ? 'SETUJUI' : 'TOLAK'} reimburse ini?`))) return;
   if (btnEl) setLoading(btnEl, true);
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "processReimburse", id: row, status: status, catatanHR: catatan }) })
     .then(r => r.json()).then(res => {
@@ -3469,8 +3537,8 @@ function handleSaveShift(e) {
     }
   }).finally(() => setLoading(btn, false));
 }
-function deleteShift(id) {
-  if (!confirm("Hapus master shift ini?")) return;
+async function deleteShift(id) {
+  if (!(await uiConfirm("Hapus master shift ini?"))) return;
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deleteShift", id: id }) }).then(res => res.json()).then(res => {
     showToast(res.message, res.status === 'success' ? 'success' : 'error');
     if (res.status === 'success') {
@@ -3525,8 +3593,8 @@ function handleSaveAturanLembur(e) {
     .finally(() => setLoading(btn, false));
 }
 
-function deleteCabang(id) {
-  if (!confirm("Hapus cabang ini?")) return;
+async function deleteCabang(id) {
+  if (!(await uiConfirm("Hapus cabang ini?"))) return;
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deleteCabang", id: id }) }).then(res => res.json()).then(res => {
     showToast(res.message, res.status === 'success' ? 'success' : 'error');
     if (res.status === 'success') {
@@ -3618,8 +3686,8 @@ function handleSaveHariLibur(e) {
     }
   }).finally(() => setLoading(btn, false));
 }
-function deleteHariLibur(id) {
-  if (!confirm("Hapus hari libur ini?")) return;
+async function deleteHariLibur(id) {
+  if (!(await uiConfirm("Hapus hari libur ini?"))) return;
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deleteHariLibur", id })}).then(r => r.json()).then(res => {
     showToast(res.message, res.status === 'success' ? 'success' : 'error');
     if (res.status === 'success') {
@@ -3985,14 +4053,14 @@ function handleSaveKaryawan(e) {
         if (schedRes && schedRes.status === 'success') {
           showToast(res.message, 'success');
         } else {
-          showToast(res.message + ' — ⚠️ Jadwal GAGAL: ' + (schedRes && schedRes.message ? schedRes.message : 'unknown'), 'warning');
+          showToast(res.message + ' — Jadwal GAGAL: ' + (schedRes && schedRes.message ? schedRes.message : 'unknown'), 'warning');
         }
         invalidateCache('employees', 'jadwalShift', 'directory');
         resetFormKaryawan();
         loadAllKaryawanHR(true);
         setLoading(btn, false);
       }).catch((err) => {
-        showToast(res.message + ' — ⚠️ Jadwal error: ' + (err && err.message ? err.message : 'network'), 'warning');
+        showToast(res.message + ' — Jadwal error: ' + (err && err.message ? err.message : 'network'), 'warning');
         invalidateCache('employees', 'directory');
         resetFormKaryawan();
         loadAllKaryawanHR(true);
@@ -4089,15 +4157,15 @@ function resetFormKaryawan() {
   document.getElementById('add-tgljoin').value = getLocalDateString();
 }
 
-function resetSesiKaryawan(nik, nama) {
-  if (!confirm(`Reset sesi login ${nama} (${nik})?\nKaryawan akan keluar dari perangkat lamanya dan dapat login di perangkat baru.`)) return;
+async function resetSesiKaryawan(nik, nama) {
+  if (!(await uiConfirm(`Reset sesi login ${nama} (${nik})?\nKaryawan akan keluar dari perangkat lamanya dan dapat login di perangkat baru.`))) return;
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "forceLogoutUser", targetNik: nik }) })
     .then(res => res.json()).then(res => showToast(res.message, res.status === 'success' ? 'success' : 'error'))
     .catch(err => showToast('Error: ' + err.message, 'error'));
 }
 
-function deleteKaryawan(nik, nama) {
-  if (confirm(`Hapus karyawan ${nama} (${nik})?`)) {
+async function deleteKaryawan(nik, nama) {
+  if (await uiConfirm(`Hapus karyawan ${nama} (${nik})?`)) {
     fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deleteKaryawan", nik: nik }) })
       .then(res => res.json()).then(res => {
         showToast(res.message, res.status === 'success' ? 'success' : 'error');
@@ -5104,8 +5172,8 @@ function renderPengumumanList(data, container) {
       ${currentUser.isHr ? `<div class="flex justify-end space-x-2 pt-2 border-t"><button data-ann-del="${escapeHtml(item.id)}" class="px-3 py-1 bg-red-100 text-red-600 text-[11px] font-bold rounded-lg">Hapus</button></div>` : ''}</div>`;
   });
   container.innerHTML = html + '</div>';
-  container.querySelectorAll('[data-ann-del]').forEach(b => b.addEventListener('click', () => {
-    if (confirm("Hapus?")) fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deletePengumuman", id: b.dataset.annDel }) })
+  container.querySelectorAll('[data-ann-del]').forEach(b => b.addEventListener('click', async () => {
+    if (await uiConfirm("Hapus?")) fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deletePengumuman", id: b.dataset.annDel }) })
       .then(r => r.json()).then(r => {
         showToast(r.message, r.status === 'success' ? 'success' : 'error');
         if (r.status === 'success') {
@@ -5205,8 +5273,8 @@ function renderSlipGajiList(data, container) {
   });
   container.innerHTML = html + '</div>';
   container.querySelectorAll('[data-slip-print]').forEach(b => b.addEventListener('click', () => printSlipGaji(b.dataset.slipPrint)));
-  container.querySelectorAll('[data-slip-del]').forEach(b => b.addEventListener('click', () => {
-    if (confirm("Hapus slip gaji ini?")) fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deleteSlipGaji", id: b.dataset.slipDel }) })
+  container.querySelectorAll('[data-slip-del]').forEach(b => b.addEventListener('click', async () => {
+    if (await uiConfirm("Hapus slip gaji ini?")) fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "deleteSlipGaji", id: b.dataset.slipDel }) })
       .then(r => r.json()).then(r => {
         showToast(r.message, r.status === 'success' ? 'success' : 'error');
         if (r.status === 'success') {
@@ -5384,8 +5452,8 @@ function submitChangePassword(e) {
       if (res.status === "success") {
         showToast("Password berhasil diubah! Silakan login ulang.", 'success');
         setTimeout(() => { closeChangePasswordModal(); handleLogout(); }, 1500);
-      } else { errEl.innerText = "⚠️ " + res.message; errEl.classList.remove('hidden'); }
-    }).catch(err => { errEl.innerText = "❌ " + err.message; errEl.classList.remove('hidden'); })
+      } else { errEl.innerText = "" + res.message; errEl.classList.remove('hidden'); }
+    }).catch(err => { errEl.innerText = "" + err.message; errEl.classList.remove('hidden'); })
     .finally(() => setLoading(btn, false, 'Simpan'));
 }
 
@@ -6034,6 +6102,50 @@ function switchHrTab(tab) {
   document.addEventListener('visibilitychange',function(){ if(visible()) tick(); });
   tick(); loop();
 })();
+</script>
+<script>
+(function(){
+  function dlg(o){return new Promise(function(res){
+    var prev=document.activeElement,b=document.createElement('div');b.className='ui-dlg-back';
+    var d=document.createElement('div');d.className='ui-dlg'+(o.danger?' danger':'');d.setAttribute('role','alertdialog');d.setAttribute('aria-modal','true');
+    d.innerHTML='<div class="ic"><i class="fa-solid '+(o.input?'fa-pen':(o.danger?'fa-triangle-exclamation':'fa-circle-question'))+'"></i></div><h3></h3><p></p>'+(o.input?'<input type="text">':'')+'<div class="act"><button type="button" class="no"></button><button type="button" class="ok"></button></div>';
+    d.querySelector('h3').textContent=o.title;d.querySelector('p').textContent=o.msg;
+    var no=d.querySelector('.no'),ok=d.querySelector('.ok'),inp=d.querySelector('input');
+    no.textContent=o.cancel||'Batal';ok.textContent=o.ok||'Ya, lanjutkan';if(inp)inp.value=o.def==null?'':o.def;
+    function close(v){document.removeEventListener('keydown',key,true);b.remove();try{prev&&prev.focus&&prev.focus();}catch(e){}res(v);}
+    function key(e){if(e.key==='Escape'){e.preventDefault();close(o.input?null:false);}else if(e.key==='Enter'&&(inp||document.activeElement===ok)){e.preventDefault();close(o.input?inp.value:true);}}
+    no.onclick=function(){close(o.input?null:false);};ok.onclick=function(){close(o.input?inp.value:true);};
+    b.addEventListener('mousedown',function(e){if(e.target===b)close(o.input?null:false);});
+    document.addEventListener('keydown',key,true);b.appendChild(d);document.body.appendChild(b);(inp||ok).focus();if(inp)inp.select();
+  });}
+  window.uiConfirm=function(msg){var danger=/hapus|tolak|reset|batalkan/i.test(msg);
+    return dlg({title:danger?'Konfirmasi tindakan':'Konfirmasi',msg:String(msg),danger:danger,ok:/hapus/i.test(msg)?'Ya, hapus':(/tolak/i.test(msg)?'Ya, tolak':(/reset/i.test(msg)?'Ya, reset':'Ya, lanjutkan'))});};
+  window.uiPrompt=function(msg,def){return dlg({title:'Catatan',msg:String(msg),input:true,def:def,ok:'Simpan',cancel:'Batal'});};
+})();
+(function(){
+  var g=document.getElementById('hdr-greet');if(!g||!window.Intl)return;var last=-1,f=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jakarta',hour:'2-digit',hour12:false});
+  function upd(){var h=parseInt(f.format(new Date()),10)%24;if(h===last)return;last=h;g.textContent=(h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam')+',';}
+  upd();setInterval(upd,60000);
+})();
+</script>
+<script>
+window.renderTodayCard=function(s){
+  var el=document.getElementById('today-card'); if(!el||!s) return;
+  function hm(v){ v=String(v==null?'':v); return (!v||v==='-')?'--:--':v.slice(0,5); }
+  function e(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  var shift=s.shiftName?('Shift '+s.shiftName):'', st,ic,ti,su=shift,btn='',note='';
+  if(s.isLibur&&!s.hasMasuk){ st='libur';ic='fa-mug-hot';ti='Hari libur';su=shift||'Tidak ada jadwal kerja hari ini'; }
+  else if(!s.hasMasuk){ st='belum';ic='fa-hourglass-start';ti='Belum absen masuk';su=shift||'Ketuk tombol untuk absen masuk';
+    btn='<button type="button" class="tc-btn" onclick="openAbsenModal()"><i class="fa-solid fa-fingerprint"></i> Absen Masuk</button>'; }
+  else if(s.hasPulang){ st='selesai';ic='fa-circle-check';ti='Absensi hari ini selesai';su='Terima kasih, sampai jumpa besok'; }
+  else if(s.isIzinKeluarActive){ st='izin';ic='fa-person-walking-arrow-right';ti='Sedang izin keluar';su='Jangan lupa absen kembali';
+    btn='<button type="button" class="tc-btn" onclick="handleIzinKeluar(\'Kembali Masuk\')"><i class="fa-solid fa-person-walking-arrow-loop-left"></i> Absen Kembali</button>'; }
+  else { st='kerja';ic='fa-briefcase';ti='Sedang bekerja';su=shift||(s.isFromYesterday?'Shift malam berjalan':'Semangat bekerja');
+    btn='<button type="button" class="tc-btn" onclick="openAbsenModal()"><i class="fa-solid fa-right-from-bracket"></i> Absen Pulang</button>'; }
+  if(s.hasYesterdayIncomplete&&!s.isFromYesterday) note='<div class="tc-note"><i class="fa-solid fa-triangle-exclamation"></i><span>Kemarin belum absen pulang. Ajukan Koreksi Absen.</span></div>';
+  el.innerHTML='<div class="tc tc-'+st+'"><div class="tc-top"><span class="tc-ic"><i class="fa-solid '+ic+'"></i></span><div style="min-width:0"><div class="tc-ti">'+e(ti)+'</div>'+(su?'<div class="tc-su">'+e(su)+'</div>':'')+'</div></div>'
+    +'<div class="tc-times"><div><span>Masuk</span><b>'+e(hm(s.jamMasuk))+'</b></div><div><span>Pulang</span><b>'+e(hm(s.jamPulang))+'</b></div></div>'+btn+note+'</div>';
+};
 </script>
 </body>
 </html>
