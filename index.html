@@ -975,11 +975,11 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGIzOe9WN4E9hpKqvcAFVoYdODbTu9YTgF1C2SMKNcpzT-ZxwCDIDkT7R_1Fa41g55Rw/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAHWWKru-34CrNVd6f7Emhz68CpYq8Lo5IZQ7SgcqAZ8rGOTVNRw3n0ULRq2HgsWQ90A/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
-const HEARTBEAT_INTERVAL_MS = 60 * 1000;
+const HEARTBEAT_INTERVAL_MS = 2 * 60 * 1000;   // dulu 60 dtk
 const DEVICE_ID_KEY = 'absenPro_device_id';
 const SESSION_TOKEN_KEY = 'absenPro_session';
 (function fillRiwayatYears() {
@@ -2699,7 +2699,7 @@ function refreshSummarySilent(manual) {
   summaryBusy = true;
   const date = dateEl.value, icon = document.querySelector('#btn-absen-refresh i');
   if (manual && icon) icon.classList.add('fa-spin');
-  return fetch(`${APPS_SCRIPT_URL}?action=getAbsensiByDate&date=${date}&t=${Date.now()}`)
+  return fetch(`${APPS_SCRIPT_URL}?action=getAbsensiByDate&date=${date}&t=${Date.now()}${manual ? '&fresh=1' : ''}`)
     .then(r => r.json()).then(res => {
       if (res.status !== 'success' || date !== dateEl.value) { if (manual && res.status !== 'success') showToast(res.message || 'Gagal memperbarui', 'error'); return; }
       const sig = date + '|' + (date === getLocalDateString() ? absenHHMM() : '') + '|' + JSON.stringify(res.data);
