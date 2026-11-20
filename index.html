@@ -82,6 +82,30 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
 }
 @media (min-width:1280px){ body{background:linear-gradient(180deg,#e2e8f0,#f1f5f9);} }
 @media (max-height:480px) and (orientation:landscape){ #bottom-nav{padding-top:.25rem;padding-bottom:calc(.25rem + env(safe-area-inset-bottom,0px));} }
+
+/* ===== LOGIN: selalu di tengah layar yang TERLIHAT (HP & laptop) ===== */
+#login-page{position:fixed;inset:0;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  justify-content:flex-start;padding:max(1.5rem,env(safe-area-inset-top)) max(1.5rem,env(safe-area-inset-right)) max(1.5rem,env(safe-area-inset-bottom)) max(1.5rem,env(safe-area-inset-left));
+  background:radial-gradient(120% 80% at 50% 0%,#1a8fd4 0%,#0073B7 55%,#005a91 100%);}
+#login-page .login-inner{max-width:24rem;}
+/* ===== HEADER: jam digital ===== */
+#header-clock{text-align:center;line-height:1;color:#fff;user-select:none;}
+#header-clock .hc-time{display:inline-flex;align-items:baseline;gap:.35rem;padding:.4rem .9rem .45rem;border-radius:1rem;background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);font-variant-numeric:tabular-nums;font-feature-settings:"tnum";font-weight:800;font-size:1.5rem;letter-spacing:.02em;box-shadow:inset 0 1px 0 rgba(255,255,255,.12);}
+#header-clock #hc-s{opacity:.72;font-weight:700;margin-left:-.2rem;}
+#header-clock small{font-size:.6rem;font-weight:700;letter-spacing:.08em;opacity:.7;margin-left:.15rem;}
+#header-clock .hc-date{margin-top:.4rem;font-size:.7rem;font-weight:600;color:#dbeafe;white-space:nowrap;}
+@media (max-width:767px){
+  #header-row{flex-wrap:wrap;row-gap:.85rem;}
+  #header-clock{order:3;flex:0 0 100%;}
+}
+@media (min-width:768px){
+  #header-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:1rem;}
+  #header-actions{justify-self:end;}
+  #header-clock .hc-time{font-size:1.9rem;padding:.45rem 1.1rem .5rem;}
+  #header-clock .hc-date{font-size:.75rem;}
+}
+@media (max-width:359px){ #header-clock .hc-time{font-size:1.3rem;padding:.35rem .7rem .4rem;} }
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
 </style>
 </head>
@@ -93,6 +117,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
 <!-- LOGIN -->
 <div id="login-page" class="absolute inset-0 z-50 bg-primary flex flex-col justify-center px-6">
   <script>try{if(localStorage.getItem("absenPro_user")&&localStorage.getItem("absenPro_session"))document.getElementById("login-page").classList.add("hidden");}catch(e){}</script>
+  <div class="login-inner my-auto w-full">
   <div class="text-center mb-8">
     <i class="fa-solid fa-fingerprint text-5xl text-white mb-4 bg-white/20 p-4 rounded-3xl"></i>
     <h1 class="text-2xl font-bold text-white">Presensi & HRIS Pro</h1>
@@ -116,12 +141,13 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
     <p class="text-sm font-bold text-white tracking-wide">Agung Prakosa</p>
     <p class="text-[9px] text-white/50 mt-1.5">© 2026 · Versi 1.0</p>
   </div>
+  </div>
 </div>
 
 <!-- BERANDA -->
 <div id="beranda-page" class="hidden flex-1 flex-col overflow-x-clip">
   <div class="bg-primary text-white px-5 pt-8 pb-[3.5rem] rounded-b-[2rem] relative">
-    <div class="flex items-center justify-between max-w-3xl mx-auto w-full gap-2">
+    <div id="header-row" class="flex items-center justify-between max-w-3xl mx-auto w-full gap-2">
       <div class="flex items-center space-x-3 min-w-0 flex-1">
         <div id="user-avatar-container" class="w-12 h-12 rounded-full overflow-hidden border-2 border-white/50 shadow-md flex items-center justify-center bg-white/20 backdrop-blur-sm flex-shrink-0">
           <i class="fa-solid fa-user text-xl"></i>
@@ -129,7 +155,11 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visi
         <div class="min-w-0 flex-1"><h2 id="user-name" class="font-bold text-lg leading-tight truncate">Nama User</h2>
           <p id="user-role" class="text-xs text-blue-100 truncate">Role</p></div>
       </div>
-      <div class="flex space-x-1.5 flex-shrink-0">
+      <div id="header-clock" aria-hidden="true">
+        <div class="hc-time"><span id="hc-hm">--:--</span><span id="hc-s">:--</span><small>WIB</small></div>
+        <div id="hc-date" class="hc-date">&nbsp;</div>
+      </div>
+      <div id="header-actions" class="flex space-x-1.5 flex-shrink-0">
         <button onclick="openAboutModal()" class="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center" title="Tentang Aplikasi"><i class="fa-solid fa-circle-info text-sm"></i></button>
         <button onclick="openChangePasswordModal()" class="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center" title="Ganti Password"><i class="fa-solid fa-key text-sm"></i></button>
         <button onclick="openGenericModal('Pengumuman')" class="relative w-9 h-9 bg-white/10 rounded-full flex items-center justify-center">
@@ -5953,6 +5983,24 @@ function switchHrTab(tab) {
     }
   }
 }
+</script>
+<script>
+(function headerClock(){
+  var tz='Asia/Jakarta', hm=document.getElementById('hc-hm'), sc=document.getElementById('hc-s'), dt=document.getElementById('hc-date');
+  if(!hm||!sc||!dt||!window.Intl) return;
+  var fT=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  var fD=new Intl.DateTimeFormat('id-ID',{timeZone:tz,weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var lastD='', page=document.getElementById('beranda-page'), timer=null;
+  function tick(){
+    var d=new Date(), t=fT.format(d).replace(/^24:/,'00:');
+    hm.textContent=t.slice(0,5); sc.textContent=t.slice(5);
+    var ds=fD.format(d); if(ds!==lastD){ dt.textContent=ds; lastD=ds; }
+  }
+  function visible(){ return !document.hidden && page && !page.classList.contains('hidden'); }
+  function loop(){ if(visible()) tick(); var ms=1000-(Date.now()%1000); timer=setTimeout(loop,ms+5); }
+  document.addEventListener('visibilitychange',function(){ if(visible()) tick(); });
+  tick(); loop();
+})();
 </script>
 </body>
 </html>
