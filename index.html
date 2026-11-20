@@ -213,6 +213,35 @@ body.nav-solo #bottom-nav{justify-content:center;}
   body.nav-solo #bottom-nav > div.relative{margin:0;}
 }
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
+
+/* ===== SIDEBAR LAPTOP (HR/Admin): panel biru penuh — brand di atas, menu di tengah, akun di bawah ===== */
+.nav-brand,.nav-foot{display:none;}
+@media (min-width:1024px){
+  body:not(.nav-solo) #bottom-nav{background:linear-gradient(180deg,#0a4f7e 0%,#063a5e 100%);border-right:0;box-shadow:4px 0 18px rgba(6,58,94,.18);padding:1.5rem .5rem 1.25rem;gap:1.1rem;overflow-y:auto;}
+  body:not(.nav-solo) .nav-brand{display:flex;flex-direction:column;align-items:center;gap:.4rem;width:4.5rem;padding-bottom:1.1rem;margin-bottom:.4rem;border-bottom:1px solid rgba(255,255,255,.14);}
+  .nav-brand i{width:2.5rem;height:2.5rem;border-radius:.8rem;background:rgba(255,255,255,.16);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.25rem;}
+  .nav-brand span{font-size:.62rem;font-weight:800;letter-spacing:.02em;color:rgba(255,255,255,.85);}
+  /* tombol menu: putih transparan, yang aktif diberi blok terang + garis penanda di tepi kiri */
+  body:not(.nav-solo) #bottom-nav > button{position:relative;color:rgba(255,255,255,.68);}
+  body:not(.nav-solo) #bottom-nav > button:hover{background:rgba(255,255,255,.1);color:#fff;}
+  body:not(.nav-solo) #bottom-nav > button.text-primary{background:rgba(255,255,255,.16);color:#fff;}
+  body:not(.nav-solo) #bottom-nav > button.text-primary::before{content:"";position:absolute;left:-.75rem;top:22%;bottom:22%;width:4px;border-radius:0 4px 4px 0;background:#fff;}
+  /* tombol Absensi: lingkaran putih agar jadi titik fokus di atas latar biru */
+  body:not(.nav-solo) #bottom-nav > div.relative button{background:#fff;background-clip:padding-box;border:6px solid rgba(255,255,255,.22);box-shadow:0 6px 20px rgba(0,0,0,.28);}
+  body:not(.nav-solo) #bottom-nav > div.relative button i{color:#0073B7;}
+  body:not(.nav-solo) #bottom-nav > div.relative span{color:#fff;}
+  body:not(.nav-solo) #bottom-nav button:focus-visible{outline-color:#fff;}
+  /* bagian bawah: tombol keluar + versi */
+  body:not(.nav-solo) .nav-foot{display:flex;flex-direction:column;align-items:center;gap:.5rem;margin-top:auto;width:4.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.14);}
+  .nav-logout{display:flex;flex-direction:column;align-items:center;gap:.25rem;width:100%;padding:.55rem 0;border-radius:.9rem;color:rgba(255,255,255,.75);font-size:.62rem;font-weight:800;transition:background .15s,color .15s;}
+  .nav-logout i{font-size:1.1rem;}
+  .nav-logout:hover{background:rgba(220,38,38,.3);color:#fff;}
+  .nav-foot small{font-size:.58rem;color:rgba(255,255,255,.45);}
+}
+@media (min-width:1024px) and (max-height:620px){
+  body:not(.nav-solo) #bottom-nav{gap:.6rem;}
+  body:not(.nav-solo) .nav-brand{display:none;}
+}
 </style>
 </head>
 <body class="flex justify-center min-h-screen bg-slate-100 overflow-x-hidden">
@@ -783,12 +812,17 @@ body.nav-solo #bottom-nav{justify-content:center;}
 
 <!-- BOTTOM NAV -->
 <div id="bottom-nav" class="hidden fixed bottom-0 w-full max-w-md md:max-w-4xl lg:max-w-6xl bg-white px-6 py-2 flex justify-between items-center bottom-nav-shadow z-40">
+  <div class="nav-brand" aria-hidden="true"><i class="fa-solid fa-fingerprint"></i><span>HRIS Pro</span></div>
   <button id="nav-btn-beranda" onclick="switchTab('beranda')" class="flex flex-col items-center justify-center w-16 text-primary transition-colors"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">BERANDA</span></button>
   <div class="relative -top-5">
     <button onclick="openAbsenModal()" class="w-16 h-16 bg-primary rounded-full flex items-center justify-center floating-action-button active:scale-95 transition-all cursor-pointer"><i class="fa-solid fa-fingerprint text-3xl text-white"></i></button>
     <span class="absolute -bottom-5 w-full text-center text-[10px] font-bold text-slate-700">ABSENSI</span>
   </div>
   <button id="nav-btn-hr" onclick="switchTab('hr-panel')" class="flex flex-col items-center justify-center w-16 text-slate-400 hover:text-primary transition-colors"><i class="fa-solid fa-user-shield text-xl mb-1"></i><span class="text-[10px] font-bold">HR PANEL</span></button>
+  <div class="nav-foot">
+    <button type="button" onclick="handleLogout()" class="nav-logout" title="Keluar dari akun"><i class="fa-solid fa-power-off"></i><span>KELUAR</span></button>
+    <small>Versi 1.0</small>
+  </div>
 </div>
 
 <!-- MODAL GENERIC -->
@@ -1527,6 +1561,7 @@ function handleLogin(e) {
         invalidateSettingsLocalCache();
         clearAllCache();
         document.getElementById('login-error').classList.add('hidden');
+        resetLoginForm();
         setupDashboard();
         showToast('Selamat datang, ' + currentUser.nama, 'success');
       } else {
@@ -1646,8 +1681,21 @@ function handleLogout(skipServer) {
   document.getElementById('bottom-nav').classList.add('hidden');
   document.getElementById('beranda-page').classList.add('hidden');
   document.getElementById('hr-panel-page').classList.add('hidden');
-  document.getElementById('login-password').value = "";
+  resetLoginForm();
   document.getElementById('login-error').classList.add('hidden');
+}
+
+// Kosongkan form login (username + password) & kembalikan ikon mata ke mode tersembunyi
+function resetLoginForm() {
+  const u = document.getElementById('login-username');
+  const p = document.getElementById('login-password');
+  if (u) u.value = "";
+  if (p) {
+    p.value = "";
+    p.type = 'password';
+    const eye = p.parentElement ? p.parentElement.querySelector('button i') : null;
+    if (eye) { eye.classList.remove('fa-eye-slash'); eye.classList.add('fa-eye'); }
+  }
 }
 
 // ============================================================
