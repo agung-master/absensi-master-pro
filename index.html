@@ -204,6 +204,14 @@ body .rounded-\[2rem\]{border-radius:var(--r-sheet);}
   #generic-modal > div{height:100%;max-height:100%;max-width:40rem;width:100%;margin:0;border-radius:var(--r-sheet) 0 0 var(--r-sheet);animation:sheetIn .22s ease-out;}
 }
 @keyframes sheetIn{from{transform:translateX(2rem);opacity:0}to{transform:none;opacity:1}}
+
+/* ===== NAVIGASI KARYAWAN: hanya tombol Absensi, di tengah ===== */
+body.nav-solo #bottom-nav{justify-content:center;}
+@media (min-width:1024px){
+  body.nav-solo #app-shell{padding-left:0;padding-bottom:5.5rem;}
+  body.nav-solo #bottom-nav{top:auto;bottom:2.25rem;left:auto;right:max(1.5rem,calc(50% - 36rem + 1.5rem));width:auto;max-width:none;padding:0;background:transparent;border:0;box-shadow:none;transform:none;flex-direction:row;}
+  body.nav-solo #bottom-nav > div.relative{margin:0;}
+}
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
 </style>
 </head>
@@ -1666,6 +1674,9 @@ function setupDashboard() {
   bn.classList.remove('text-slate-400'); bn.classList.add('text-primary');
   document.getElementById('nav-btn-hr').classList.remove('text-primary');
 
+  // Navigasi: karyawan hanya punya satu halaman, jadi tombol Beranda disembunyikan & tombol Absensi dipusatkan
+  document.getElementById('nav-btn-beranda').classList.toggle('hidden', !currentUser.isHr);
+  document.body.classList.toggle('nav-solo', !currentUser.isHr);
   if (currentUser.isHr) {
     document.getElementById('nav-btn-hr').classList.remove('hidden');
     document.getElementById('absensi-hari-ini-section').classList.remove('hidden');
