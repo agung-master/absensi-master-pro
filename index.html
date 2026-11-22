@@ -718,6 +718,7 @@ body.nav-solo #bottom-nav{justify-content:center;}
             <div class="min-w-0"><label class="text-[10px] font-bold text-slate-500 block mb-1">MAX LEMBUR</label><input type="number" id="lembur-max-menit" value="240" required class="w-full px-3 py-2 border rounded-xl text-xs bg-slate-50"></div>
             <div class="min-w-0"><label class="text-[10px] font-bold text-slate-500 block mb-1">PENGALI</label><input type="number" step="0.1" id="lembur-pengali" value="1.5" required class="w-full px-3 py-2 border rounded-xl text-xs bg-slate-50"></div>
           </div>
+          <p class="text-[9px] text-slate-400 italic">Satuan menit. Dipakai saat karyawan mengajukan lembur (minimal, maksimal, hari libur) dan saat HR menyetujui (dibulatkan ke bawah, dibatasi maksimal). Isi 0 untuk menonaktifkan batas.</p>
           <div><label class="text-[10px] font-bold text-slate-500 block mb-1">LEMBUR HARI LIBUR?</label><select id="lembur-libur-opt" class="w-full px-3 py-2 border rounded-xl text-xs bg-slate-50 font-bold"><option value="Ya">Ya</option><option value="Tidak">Tidak</option></select></div>
           <button type="submit" class="w-full py-2.5 bg-primary text-white font-bold text-xs rounded-xl shadow-md">Simpan Aturan</button>
         </form>
@@ -928,7 +929,7 @@ body.nav-solo #bottom-nav{justify-content:center;}
       <div><label class="text-[10px] font-bold text-slate-500 block mb-1">CATATAN</label><input type="text" id="lembur-approve-catatan" class="w-full p-2 border rounded-xl text-xs bg-slate-50"></div>
       <div class="flex gap-2 pt-1">
         <button onclick="closeLemburApproveModal()" class="flex-1 py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Batal</button>
-        <button onclick="confirmLemburApprove()" class="flex-1 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold">Setujui</button>
+        <button id="btn-confirm-lembur" onclick="confirmLemburApprove()" class="flex-1 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold">Setujui</button>
       </div>
     </div>
   </div>
@@ -1197,7 +1198,7 @@ body.nav-solo #bottom-nav{justify-content:center;}
 // ============================================================
 // KONFIGURASI = TEMPEL DISINI
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjVBr1Fr8uAv2Lyw5omTRzlkfs_e1doYjdlrpo-YVha7cei8Zk0bxVuQoPL05qz1oHZQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWbjZTvO51U-_Sye0SF6QA3Pe6Wnhl4YceS7hh_d9feV2WvtyVl6K6kGu5ii6KX4MzuQ/exec";
 const SETTINGS_CACHE_KEY = 'hris_settings_cache_v2';
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
@@ -1466,12 +1467,14 @@ function setLoading(btn, isLoading, originalText) {
     loadingBtns.add(btn);
     btn.disabled = true;
     btn.dataset.originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" data-ld="1"></i> Memproses...';
   } else {
     const wasLoading = btn.dataset.loading === '1';
     loadingBtns.delete(btn);
     btn.dataset.loading = '';
-    const html = originalText || btn.dataset.originalHtml;
+    // Jika label diganti kode lain selama proses (spinner sudah hilang), pakai label terbaru itu.
+    const labelChanged = wasLoading && !btn.querySelector('[data-ld="1"]');
+    const html = originalText || (labelChanged ? btn.innerHTML : btn.dataset.originalHtml);
     if (wasLoading && btn.dataset.result === 'success') { btnFlashSuccess(btn, html); return; }
     btn.disabled = false;
     if (html) btn.innerHTML = html;
@@ -1812,7 +1815,7 @@ function loadMyAttendance(force) {
     const cached = getCached('myAttendance', month);
     if (cached) { renderMyAttendance(cached); return Promise.resolve(); }
   }
-  return fetch(`${APPS_SCRIPT_URL}?action=getPersonalAttendance&nik=${currentUser.nik}&periode=${month}`)
+  return fetch(`${APPS_SCRIPT_URL}?action=getPersonalAttendance&nik=${encodeURIComponent(currentUser.nik)}&periode=${encodeURIComponent(month)}`)
     .then(res => res.json()).then(res => {
       if (res.status === "success") {
         setCached('myAttendance', res.data, month, DEFAULT_CACHE_TTL);
@@ -2327,6 +2330,8 @@ function openAbsenModal() {
   const settingsP = settingsReady ? Promise.resolve() : loadAllSettingsHR(false).catch(e => console.warn(e));
   if (settingsReady) {
     getLocationAndVerifyGeofence();
+  } else if (!navigator.geolocation) {
+    settingsP.then(() => getLocationAndVerifyGeofence());
   } else {
     navigator.geolocation.getCurrentPosition(
       pos => {
@@ -2636,7 +2641,7 @@ function submitAbsenMode(tipeAction) {
       }
     });
   }).then(res => {
-    if (res && res.status !== 'success' && res._retried && /^Sudah absen (masuk|pulang)/i.test(res.message || '')) {
+    if (res && res.status !== 'success' && res._retried && /^(Anda )?sudah absen (masuk|pulang)/i.test(res.message || '')) {
       res = { status: 'success', message: tipeAction === 'Masuk' ? "Presensi Masuk Berhasil!" : "Presensi Pulang Berhasil!" };
     }
     if (res.status === 'success') {
@@ -3189,7 +3194,7 @@ function renderPendingApprovals() {
     let detailBody = '', actionButtons = '';
     if (item.type === 'LEMBUR') {
       detailBody = `<p><b>Tanggal:</b> ${escapeHtml(item.tglMulai)}</p><p><b>Jam:</b> ${escapeHtml(item.jamMulai)} s.d ${escapeHtml(item.jamSelesai)} (${escapeHtml(item.estimasiMenit)} Menit)</p><p class="italic text-slate-500">"${escapeHtml(item.keterangan)}"</p>`;
-      actionButtons = `<button data-act="lembur-approve" data-row="${escapeHtml(item.id)}" data-menit="${item.estimasiMenit}" class="flex-1 bg-emerald-500 hover:bg-emerald-600 transition py-2 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-check mr-1"></i> Setujui</button>
+      actionButtons = `<button data-act="lembur-approve" data-row="${escapeHtml(item.id)}" data-menit="${escapeHtml(item.estimasiMenit)}" class="flex-1 bg-emerald-500 hover:bg-emerald-600 transition py-2 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-check mr-1"></i> Setujui</button>
         <button data-act="lembur-reject" data-row="${escapeHtml(item.id)}" class="flex-1 bg-red-500 hover:bg-red-600 transition py-2 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-xmark mr-1"></i> Tolak</button>`;
     } else if (item.type === 'SHIFT') {
       detailBody = `<p><b>Shift Anda:</b> ${escapeHtml(item.tglMulai)} (${escapeHtml(item.shiftAsli)})</p><p><b>Tukar:</b> ${escapeHtml(item.namaRekan)}</p><p><b>Shift Rekan:</b> ${escapeHtml(item.tglSelesai)} (${escapeHtml(item.shiftRekan)})</p><p class="italic text-slate-500">"${escapeHtml(item.keterangan)}"</p>`;
@@ -3255,18 +3260,29 @@ function processShiftApprovalById(id, status, btnEl) {
     .finally(() => { if (btnEl) setLoading(btnEl, false); });
 }
 
+function applyLemburRuleToMinutes(m) {
+  const r = globalLemburRule || {};
+  m = Math.max(0, parseInt(m) || 0);
+  const mx = Number(r.maxMenit) || 0, pb = Number(r.pembulatan) || 0;
+  if (mx > 0 && m > mx) m = mx;
+  if (pb > 0) m = Math.floor(m / pb) * pb;
+  return m;
+}
 function openLemburApproveModal(rowIndex, defaultMenit) {
   pendingLemburRow = rowIndex;
-  document.getElementById('lembur-approve-menit').value = defaultMenit || 120;
+  document.getElementById('lembur-approve-menit').value = applyLemburRuleToMinutes(defaultMenit) || defaultMenit || 120;
   document.getElementById('lembur-approve-catatan').value = "";
   document.getElementById('lembur-approve-modal').classList.remove('hidden');
 }
 function closeLemburApproveModal() { document.getElementById('lembur-approve-modal').classList.add('hidden'); pendingLemburRow = null; }
 
 function confirmLemburApprove() {
+  const btnOk = document.getElementById('btn-confirm-lembur');
+  if (btnOk && btnOk.dataset.loading === '1') return;
   const menit = parseInt(document.getElementById('lembur-approve-menit').value) || 0;
   const catatan = document.getElementById('lembur-approve-catatan').value || "-";
   if (menit <= 0) { showToast("Durasi harus > 0", 'warning'); return; }
+  setLoading(btnOk, true);
   fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "processPengajuanLembur", id: pendingLemburRow, status: "APPROVED", menitApproved: menit, catatanHR: catatan }) })
     .then(res => res.json()).then(res => {
       showToast(res.message, res.status === 'success' ? 'success' : 'error');
@@ -3276,7 +3292,8 @@ function confirmLemburApprove() {
         loadHrPendingApprovals(true);
         loadApprovalHistoryHR(true);
       }
-    }).catch(err => showToast('Error: ' + err.message, 'error'));
+    }).catch(err => showToast('Error: ' + err.message, 'error'))
+    .finally(() => setLoading(btnOk, false));
 }
 
 async function processLemburReject(row, btnEl) {
@@ -3618,6 +3635,7 @@ function handleSaveShift(e) {
       resetFormShiftMaster();
       invalidateSettingsLocalCache();
       invalidateCache('settingsData');
+      invalidateCache('employees', 'jadwalShift', 'directory', 'myShiftRequests');
       loadAllSettingsHR(true);
     }
   }).finally(() => setLoading(btn, false));
@@ -3702,18 +3720,18 @@ function loadHariLiburHR(force) {
   }
   const container = document.getElementById('list-hari-libur');
   container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">Memuat...</p>';
-  return fetch(`${APPS_SCRIPT_URL}?action=getHariLibur&tahun=${tahun}`).then(r => r.json()).then(res => {
+  return fetch(`${APPS_SCRIPT_URL}?action=getHariLibur&tahun=${encodeURIComponent(tahun)}`).then(r => r.json()).then(res => {
     if (res.status === 'success') {
       setCached('hariLibur', res.data || [], tahun, LONG_CACHE_TTL);
       renderHariLiburHR(res.data, tahun);
-    }
-  });
+    } else container.innerHTML = '<p class="text-xs text-red-500 text-center py-2">' + escapeHtml(res.message || 'Gagal memuat hari libur.') + '</p>';
+  }).catch(() => { container.innerHTML = '<p class="text-xs text-red-500 text-center py-2">Gagal memuat hari libur. Periksa koneksi lalu coba lagi.</p>'; });
 }
 
 function renderHariLiburHR(data, tahun) {
   const container = document.getElementById('list-hari-libur');
   if (!data || data.length === 0) {
-    container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Belum ada hari libur ${tahun || new Date().getFullYear()}.</p>`;
+    container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Belum ada hari libur ${escapeHtml(tahun || new Date().getFullYear())}.</p>`;
     return;
   }
   let html = '';
@@ -3814,7 +3832,7 @@ function renderKuotaCutiHR(data) {
     data.forEach(k => {
       html += `<div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-xl gap-2">
         <div class="min-w-0"><p class="text-xs font-bold text-slate-800 truncate">${escapeHtml(k.nama)} (${escapeHtml(k.nik)})</p>
-          <p class="text-[10px] text-slate-500 truncate">Tahun ${k.tahun} · Sisa: <b class="text-emerald-600">${k.sisa}</b> / ${k.kuotaTahunan + k.kuotaBersama + k.carryOver}</p></div>
+          <p class="text-[10px] text-slate-500 truncate">Tahun ${escapeHtml(k.tahun)} · Sisa: <b class="text-emerald-600">${k.sisa}</b> / ${k.kuotaTahunan + k.kuotaBersama + k.carryOver}</p></div>
         <span class="text-[9px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full flex-shrink-0">${k.terpakai} terpakai</span></div>`;
     });
     container.innerHTML = html;
@@ -4299,7 +4317,8 @@ function downloadLaporanAbsensi() {
         document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         showToast("Laporan berhasil diunduh", 'success');
-      } else showToast("Tidak ada data untuk rentang tanggal tersebut.", 'warning');
+      } else if (res.status !== "success") showToast(res.message || "Gagal memuat laporan.", 'error');
+      else showToast("Tidak ada data untuk rentang tanggal tersebut.", 'warning');
     }).catch(err => showToast("Gagal: " + err.message, 'error'))
     .finally(() => setLoading(btn, false));
 }
@@ -4687,7 +4706,7 @@ function calcEstimasiLembur() {
     let start = new Date("1970-01-01T" + jMulai + "Z");
     let end = new Date("1970-01-01T" + jSelesai + "Z");
     let diff = (end - start) / 60000;
-    if (diff <= 0) diff += 1440;
+    if (diff < 0) diff += 1440;   // lintas tengah malam; jam sama = 0 menit (ditolak validasi)
     if (diff > 720) diff = 720;
     document.getElementById('lembur-estimasi-val').value = diff;
     document.getElementById('lembur-estimasi-view').innerText = diff + " Menit";
@@ -4744,6 +4763,7 @@ function getLocationForActivity() {
 }
 
 function openActCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { showToast("Kamera tidak didukung di peramban ini (butuh koneksi HTTPS).", 'error'); return; }
   document.getElementById('act-camera-modal').classList.remove('hidden');
   document.getElementById('act-captured-img').classList.add('hidden');
   document.getElementById('act-webcam').classList.remove('hidden');
@@ -4980,7 +5000,7 @@ function tarikDataPayroll() {
   const btn = document.getElementById('btn-tarik-payroll');
   setLoading(btn, true);
   const gapok = parseFloat(document.getElementById('sg-gapok').value) || 0;
-  fetch(`${APPS_SCRIPT_URL}?action=getPayrollData&nik=${nik}&periode=${periode}&gajiPokok=${gapok}`)
+  fetch(`${APPS_SCRIPT_URL}?action=getPayrollData&nik=${encodeURIComponent(nik)}&periode=${encodeURIComponent(periode)}&gajiPokok=${gapok}`)
     .then(res => res.json()).then(res => {
       if (res.status === "success") {
         const data = res.data;
@@ -5036,6 +5056,10 @@ function submitPengumuman(e) {
 function renderTab1(container) {
   if (currentActiveMenu === 'Lembur') {
     const today = getLocalDateString();
+    const _lr = globalLemburRule || {}, _hint = [];
+    if (Number(_lr.minMenit) > 0) _hint.push('minimal ' + Number(_lr.minMenit) + ' menit');
+    if (Number(_lr.maxMenit) > 0) _hint.push('maksimal ' + Number(_lr.maxMenit) + ' menit per hari');
+    const lemburRuleHint = _hint.length ? `<div class="text-[9px] text-slate-400 italic">*Aturan lembur: ${_hint.join(', ')}.</div>` : '';
     container.innerHTML = `<form onsubmit="submitFormLemburKaryawan(event)" class="space-y-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
         <div><label class="text-[10px] font-bold text-slate-500 block mb-1">TANGGAL *</label><input type="date" id="lembur-tgl" value="${today}" max="${today}" required class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 font-bold"></div>
         <div class="grid grid-cols-2 gap-2">
@@ -5045,7 +5069,8 @@ function renderTab1(container) {
         <div class="bg-amber-50/70 p-2.5 rounded-xl border border-amber-200 flex justify-between items-center">
           <span class="text-xs text-amber-900 font-bold">Estimasi:</span><span id="lembur-estimasi-view" class="text-xs font-black text-amber-900">0 Menit</span>
           <input type="hidden" id="lembur-estimasi-val" value="0"></div>
-        <div class="text-[9px] text-slate-400 italic">*Jika jam selesai < jam mulai, sistem otomatis anggap lintas tengah malam.</div>
+        <div class="text-[9px] text-slate-400 italic">*Jika jam selesai &lt; jam mulai, sistem otomatis anggap lintas tengah malam.</div>
+        ${lemburRuleHint}
         <div><label class="text-[10px] font-bold text-slate-500 block mb-1">ALASAN *</label><textarea id="lembur-alasan" required class="w-full p-2.5 border rounded-xl text-xs bg-slate-50 h-20"></textarea></div>
         <button type="submit" id="btn-submit-lembur" class="w-full py-3 bg-primary text-white font-bold rounded-xl text-xs shadow-md">Kirim</button>
       </form>`;
@@ -5203,20 +5228,20 @@ function renderTab2(container) {
         globalPengumumanList = res.data;
         setCached('pengumumanList', res.data, undefined, DEFAULT_CACHE_TTL);
         renderPengumumanList(res.data, container);
-      }
-    });
+      } else container.innerHTML = '<div class="text-center text-xs text-red-500 py-6">' + escapeHtml(res.message || 'Gagal memuat pengumuman.') + '</div>';
+    }).catch(() => { container.innerHTML = '<div class="text-center text-xs text-red-500 py-6">Gagal memuat data. Periksa koneksi lalu buka ulang menu ini.</div>'; });
   } else if (currentActiveMenu === 'Shift') {
     const ck = 'shift:' + currentUser.nik;
     const cachedList = getCached('myShiftRequests', ck);
     if (cachedList) { renderShiftRequests(cachedList, container); return; }
     container.innerHTML = '<div class="text-center py-6 text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-1"></i><p>Memuat...</p></div>';
-    fetch(`${APPS_SCRIPT_URL}?action=getPengajuanShift&nik=${currentUser.nik}&isHr=${currentUser.isHr}`).then(res => res.json()).then(res => {
+    fetch(`${APPS_SCRIPT_URL}?action=getPengajuanShift&nik=${encodeURIComponent(currentUser.nik)}&isHr=${currentUser.isHr}`).then(res => res.json()).then(res => {
       if (res.status === "success") {
         globalPengajuanShiftList = res.data;
         setCached('myShiftRequests', res.data, ck, DEFAULT_CACHE_TTL);
         renderShiftRequests(res.data, container);
-      }
-    });
+      } else container.innerHTML = '<div class="text-center text-xs text-red-500 py-6">' + escapeHtml(res.message || 'Gagal memuat riwayat.') + '</div>';
+    }).catch(() => { container.innerHTML = '<div class="text-center text-xs text-red-500 py-6">Gagal memuat data. Periksa koneksi lalu buka ulang menu ini.</div>'; });
   } else if (currentActiveMenu === 'Slip Gaji') {
     const filterHtml = currentUser.isHr ? `<div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 mb-3">
       <label class="text-[10px] font-bold text-slate-500 block mb-1">FILTER PERIODE (opsional)</label>
@@ -5232,13 +5257,13 @@ function renderTab2(container) {
     const cachedList = getCached('myReimburse', ck);
     if (cachedList) { renderReimburseList(cachedList, container); return; }
     container.innerHTML = '<div class="text-center py-6 text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-1"></i><p>Memuat...</p></div>';
-    fetch(`${APPS_SCRIPT_URL}?action=getMyRequests&nik=${currentUser.nik}`).then(res => res.json()).then(res => {
+    fetch(`${APPS_SCRIPT_URL}?action=getMyRequests&nik=${encodeURIComponent(currentUser.nik)}`).then(res => res.json()).then(res => {
       if (res.status === "success") {
         const filtered = (res.data || []).filter(item => item.type === 'REIMBURSE');
         setCached('myReimburse', filtered, ck, DEFAULT_CACHE_TTL);
         renderReimburseList(filtered, container);
-      }
-    });
+      } else container.innerHTML = '<div class="text-center text-xs text-red-500 py-6">' + escapeHtml(res.message || 'Gagal memuat riwayat.') + '</div>';
+    }).catch(() => { container.innerHTML = '<div class="text-center text-xs text-red-500 py-6">Gagal memuat data. Periksa koneksi lalu buka ulang menu ini.</div>'; });
   } else {
     container.innerHTML = '<div class="text-center opacity-50 py-10"><p class="text-xs">Menu Riwayat belum tersedia.</p></div>';
   }
@@ -5323,7 +5348,7 @@ function loadSlipGajiList(force) {
     if (cached) { renderSlipGajiList(cached, container); return; }
   }
   container.innerHTML = '<div class="text-center py-6 text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-1"></i><p>Memuat...</p></div>';
-  const url = `${APPS_SCRIPT_URL}?action=getSlipGaji&nik=${currentUser.nik}&isHr=${currentUser.isHr}${periodeFilter ? '&periode=' + periodeFilter : ''}`;
+  const url = `${APPS_SCRIPT_URL}?action=getSlipGaji&nik=${encodeURIComponent(currentUser.nik)}&isHr=${currentUser.isHr}${periodeFilter ? '&periode=' + encodeURIComponent(periodeFilter) : ''}`;
   fetch(url).then(res => res.json()).then(res => {
     if (res.status === "success") {
       globalSlipList = res.data;
@@ -5704,7 +5729,7 @@ function openKuotaCutiModal() {
   document.getElementById('kcm-tahun').innerText = tahun;
   const cached = getCached('kuotaCuti', currentUser.nik + '|' + tahun);
   if (cached) { renderKuotaCuti(cached); return; }
-  fetch(`${APPS_SCRIPT_URL}?action=getKuotaCuti&nik=${currentUser.nik}&tahun=${tahun}`).then(r => r.json()).then(res => {
+  fetch(`${APPS_SCRIPT_URL}?action=getKuotaCuti&nik=${encodeURIComponent(currentUser.nik)}&tahun=${tahun}`).then(r => r.json()).then(res => {
     if (res.status === 'success') {
       setCached('kuotaCuti', res.data, currentUser.nik + '|' + tahun, DEFAULT_CACHE_TTL);
       renderKuotaCuti(res.data);
@@ -5904,6 +5929,10 @@ function closeKoreksiAbsenModal() { document.getElementById('koreksi-absen-modal
 function submitKoreksiAbsen(e) {
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
+  if (!document.getElementById('kor-jam-masuk').value && !document.getElementById('kor-jam-keluar').value) {
+    showToast("Isi minimal salah satu: jam masuk atau jam pulang yang benar.", 'warning');
+    return;
+  }
   setLoading(btn, true);
   const fileInput = document.getElementById('kor-bukti');
   const send = (buktiBase64) => {
