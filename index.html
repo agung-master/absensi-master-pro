@@ -278,6 +278,260 @@ body.nav-solo #bottom-nav{justify-content:center;}
   #today-card .tc-ob{padding:.5rem 1rem;}
 }
 </style>
+<style id="pro-laptop">
+/* ===== AURORA COMMAND CENTER — desain laptop (>=1024px). Hanya transform/opacity dianimasikan agar tetap lancar ===== */
+:root{--ease:cubic-bezier(.22,.8,.24,1);--brand2:#1ea0e6;--navy:#06223d;--line:#dbe6f1;--gut:clamp(1.25rem,2.6vw,3.5rem);
+  --sh:0 1px 2px rgba(8,40,72,.05),0 14px 30px -18px rgba(8,40,72,.28);--sh-hi:0 2px 4px rgba(8,40,72,.06),0 22px 40px -18px rgba(0,115,183,.4)}
+@keyframes proIn{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+@keyframes proHead{from{opacity:0;transform:translate3d(0,-12px,0)}to{opacity:1;transform:none}}
+@keyframes proRing{0%{opacity:.55;transform:scale(1)}70%,100%{opacity:0;transform:scale(1.14,1.5)}}
+@keyframes proBar{from{opacity:0;transform:scaleY(.2)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translate3d(0,10px,0) scale(.985)}to{opacity:1;transform:none}}
+@keyframes aurora{from{transform:translate3d(-3%,-2%,0) scale(1)}to{transform:translate3d(3%,3%,0) scale(1.08)}}
+@keyframes sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
+@keyframes livePulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.6);opacity:0}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes orb{from{transform:translate3d(0,0,0)}to{transform:translate3d(6rem,4rem,0)}}
+@keyframes badgePop{0%{transform:scale(.4)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+@media (min-width:1024px){
+  html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#a9bfd3 transparent}
+  body{background:#e9f0f8}
+  body::before{content:"";position:fixed;inset:-15%;z-index:0;pointer-events:none;will-change:transform;
+    background:radial-gradient(38rem 28rem at 12% 8%,rgba(30,160,230,.20),transparent 62%),radial-gradient(34rem 26rem at 92% 18%,rgba(99,102,241,.15),transparent 62%),radial-gradient(40rem 30rem at 55% 105%,rgba(16,185,129,.12),transparent 62%);animation:aurora 24s ease-in-out infinite alternate}
+  body #app-shell{position:relative;z-index:1;max-width:none;background:transparent;box-shadow:none}
+  body #bottom-nav{left:0}
+  body.nav-solo #bottom-nav{right:2.25rem}
+  #beranda-page .max-w-3xl,#hr-panel-page .max-w-3xl{max-width:none}
+
+  /* ---------- LOGIN: dua panel ---------- */
+  #login-page{background:radial-gradient(55rem 38rem at 8% 0%,#23a5ea 0%,transparent 60%),radial-gradient(48rem 36rem at 100% 100%,#0a3d8f 0%,transparent 58%),linear-gradient(135deg,#005a96,#0073B7 50%,#053f6b);overflow-x:hidden}
+  #login-page::before,#login-page::after{content:"";position:fixed;border-radius:50%;filter:blur(46px);pointer-events:none;animation:orb 14s ease-in-out infinite alternate}
+  #login-page::before{width:22rem;height:22rem;left:-6rem;bottom:-4rem;background:rgba(125,225,255,.28)}
+  #login-page::after{width:18rem;height:18rem;right:12%;top:-5rem;background:rgba(129,140,248,.30);animation-duration:18s}
+  #login-page .login-inner{max-width:72rem;display:grid;grid-template-columns:minmax(0,1fr) 26rem;grid-template-rows:auto auto;column-gap:5rem;align-items:center;position:relative;z-index:1}
+  #login-page .login-inner>div:nth-child(1){grid-area:1/1;text-align:center;margin:0}
+  #login-page .login-inner>div:nth-child(1) i{font-size:3.4rem;display:inline-block;animation:floaty 5s ease-in-out infinite;box-shadow:0 18px 40px -12px rgba(0,0,0,.35);backdrop-filter:none}
+  #login-page .login-inner>div:nth-child(1) h1{font-size:clamp(2.3rem,3.4vw,3.3rem);line-height:1.1;letter-spacing:-.035em;font-weight:800;white-space:nowrap}
+  #login-page .login-inner>div:nth-child(1) h1::after{content:"Absensi, shift, lembur, dan persetujuan dalam satu layar.";display:block;margin:1rem auto 0;max-width:none;white-space:nowrap;text-align:center;font-size:clamp(.82rem,1.25vw,1.05rem);font-weight:500;letter-spacing:0;line-height:1.5;color:rgba(255,255,255,.78)}
+  #login-page .login-inner>div:nth-child(2){grid-area:1/2/3/3;max-width:none;padding:2.4rem 2.2rem;background:rgba(255,255,255,.97);box-shadow:0 44px 90px -34px rgba(0,16,44,.7);animation:proIn .8s var(--ease) both}
+  #login-page .login-inner>div:nth-child(3){grid-area:2/1;text-align:center;margin:2.5rem 0 0}
+  #login-page input{transition:border-color .2s,box-shadow .2s,background-color .2s}
+  #login-page input:focus{background:#fff;border-color:#0073B7;box-shadow:0 0 0 4px rgba(0,115,183,.14);outline:0}
+  #btn-login{background:linear-gradient(135deg,#0b86d1,#005a96);transition:transform .2s var(--ease),box-shadow .2s}
+  #btn-login:hover{transform:translateY(-2px);box-shadow:0 16px 28px -12px rgba(0,90,150,.8)}
+
+  /* ---------- SIDEBAR ---------- */
+  body:not(.nav-solo) #bottom-nav{background:radial-gradient(18rem 14rem at 50% -2rem,rgba(30,160,230,.35),transparent 70%),linear-gradient(180deg,#07294a,#041a30);box-shadow:6px 0 28px -10px rgba(4,26,48,.55)}
+  body:not(.nav-solo) #bottom-nav>button{transition:background-color .2s,color .2s,transform .2s var(--ease)}
+  body:not(.nav-solo) #bottom-nav>button:hover{transform:translateX(3px)}
+  body:not(.nav-solo) #bottom-nav>button.text-primary{background:linear-gradient(135deg,rgba(56,189,248,.34),rgba(255,255,255,.08));box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 10px 20px -10px rgba(0,0,0,.6)}
+  body:not(.nav-solo) #bottom-nav>button.text-primary::before{animation:proBar .35s var(--ease) both}
+  #bottom-nav>div.relative button{position:relative;transition:transform .25s var(--ease)}
+  #bottom-nav>div.relative button:hover{transform:scale(1.08)}
+  #bottom-nav>div.relative button::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(56,189,248,.8);pointer-events:none;animation:proRing 2.8s ease-out infinite}
+  body.nav-solo #bottom-nav>div.relative button{box-shadow:0 14px 30px -8px rgba(0,115,183,.7)}
+
+  /* ---------- HEADER ---------- */
+  #app-header{position:relative;padding:1.15rem var(--gut) 1.4rem;overflow:hidden;border-radius:0 0 2rem 2rem;
+    background:radial-gradient(54rem 20rem at 88% -50%,rgba(255,255,255,.26),transparent 60%),radial-gradient(38rem 18rem at 0% 130%,rgba(0,32,76,.5),transparent 60%),linear-gradient(115deg,#004f8c,#0073B7 52%,#1c95d8);box-shadow:0 22px 44px -26px rgba(0,70,130,.7)}
+  #app-header::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:radial-gradient(rgba(255,255,255,.35) 1px,transparent 1.4px) 0 0/22px 22px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 45%,transparent);mask-image:linear-gradient(90deg,transparent,#000 45%,transparent)}
+  #app-header::after{content:"";position:absolute;top:0;bottom:0;width:28%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.16),transparent);animation:sheen 9s ease-in-out infinite}
+  #header-row{position:relative;z-index:1}
+  #app-header #user-avatar-container{width:3.2rem;height:3.2rem;box-shadow:0 0 0 4px rgba(255,255,255,.16),0 8px 18px -6px rgba(0,0,0,.4)}
+  #app-header #user-name{font-size:1.3rem;letter-spacing:-.015em}
+  #header-clock .hc-time{font-size:clamp(1.8rem,2.2vw,2.4rem);padding:.35rem 1.25rem .45rem;border-radius:1.2rem;background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 14px 28px -16px rgba(0,0,0,.5)}
+  #header-clock .hc-date{font-size:.76rem;margin-top:.5rem}
+  #header-actions>*{transition:background-color .2s,transform .2s var(--ease)}
+  #header-actions>*:hover{background:rgba(255,255,255,.26);transform:translateY(-2px)}
+
+  /* ---------- BERANDA: grid 12 kolom ---------- */
+  #app-shell #beranda-body{max-width:118rem;background:transparent;margin-top:1.25rem;padding:0 var(--gut) 2.5rem;gap:1.25rem 1.5rem}
+  #beranda-body span:has(>.fa-arrows-left-right){display:none}
+  #beranda-body h3.text-sm{font-size:1rem;letter-spacing:-.01em}
+  #beranda-body .bg-slate-50.rounded-2xl{position:relative;overflow:hidden;background:rgba(255,255,255,.82);backdrop-filter:none;border:1px solid var(--line);border-radius:1.25rem;box-shadow:var(--sh);padding:1.1rem 1.25rem}
+  #beranda-body .bg-slate-50>p.uppercase{text-transform:none;font-size:.9rem;font-weight:800;margin-bottom:.85rem}
+  #beranda-body .bg-slate-50 .grid>button{padding:.5rem .25rem;border-radius:1rem}
+  #beranda-body .bg-slate-50 .grid>button>div{width:3.2rem;height:3.2rem;border-radius:1.05rem;transition:transform .25s var(--ease),background-color .2s,border-color .2s,box-shadow .25s}
+  #beranda-body .bg-slate-50 .grid>button>span{font-size:.75rem;font-weight:600;color:#3f566d}
+  #beranda-body .bg-slate-50 .grid>button:hover>div{background:linear-gradient(135deg,#1ea0e6,#0073B7);border-color:transparent;transform:translateY(-4px);box-shadow:0 14px 22px -10px rgba(0,115,183,.7)}
+  #beranda-body .bg-slate-50 .grid>button:hover i{color:#fff}
+  #beranda-body>div.bg-gradient-to-r{position:relative;overflow:hidden;background:linear-gradient(100deg,#e3f1fc,#ecefff);border-color:#cbe0f2;border-radius:1.25rem;padding:1.1rem 1.4rem;box-shadow:var(--sh)}
+  #beranda-body>div.bg-gradient-to-r::after{content:"";position:absolute;top:0;bottom:0;width:30%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);animation:sheen 8s ease-in-out infinite 2s}
+  #beranda-body>div.bg-gradient-to-r button>i{transition:transform .25s var(--ease)}
+  #beranda-body>div.bg-gradient-to-r button:hover>i{transform:translateX(6px)}
+  #beranda-body>div.grid{margin:0;gap:.85rem;grid-template-columns:repeat(4,minmax(0,1fr))}
+  #beranda-body>div.grid>button{position:relative;overflow:hidden;padding:.85rem .5rem;border-radius:1.05rem;border-color:var(--line);box-shadow:var(--sh)}
+  #beranda-body>div.grid>button:hover{box-shadow:var(--sh-hi)}
+  #personal-summary-section .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  /* sorot kursor: satu lapisan lembut di kartu interaktif */
+  #absen-rows>[data-nik]::after,#daftar-absen-container [data-nik]::after,#beranda-body>div.grid>button::after,#beranda-body .bg-slate-50.rounded-2xl::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s;background:radial-gradient(15rem circle at var(--mx,50%) var(--my,50%),rgba(30,160,230,.14),transparent 65%)}
+  #absen-rows>[data-nik]:hover::after,#daftar-absen-container [data-nik]:hover::after,#beranda-body>div.grid>button:hover::after,#beranda-body .bg-slate-50.rounded-2xl:hover::after{opacity:1}
+
+  /* ---------- KARTU ABSEN HARI INI ---------- */
+  #today-card .tc:not(.skeleton){position:relative;overflow:hidden;background:linear-gradient(90deg,var(--cb),#fff 36%);border-radius:1.35rem;border-left-width:6px;padding:1.05rem 1.5rem;box-shadow:var(--sh)}
+  #today-card .tc-ic{width:3.2rem;height:3.2rem;font-size:1.25rem;box-shadow:0 0 0 6px rgba(255,255,255,.7)}
+  #today-card .tc-ti{font-size:1.2rem;letter-spacing:-.015em}
+  #today-card .tc-su{font-size:.82rem}
+  #today-card .tc-times{grid-template-columns:repeat(2,9.5rem)}
+  #today-card .tc-times>div{background:rgba(255,255,255,.88);padding:.6rem .95rem;border-radius:1rem}
+  #today-card .tc-times b{font-size:1.45rem;letter-spacing:.02em}
+  #today-card .tc-btn{position:relative;font-size:.95rem;padding:.8rem 1.75rem;border-radius:1rem;transition:transform .2s var(--ease),filter .2s}
+  #today-card .tc-btn:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  #today-card .tc-btn:active{transform:scale(.97)}
+  #today-card .tc-belum .tc-btn::after{content:"";position:absolute;inset:0;border-radius:inherit;border:2px solid var(--c);pointer-events:none;animation:proRing 2.6s ease-out infinite}
+
+  /* ---------- ABSENSI KARYAWAN HARI INI: satu panel, selalu penuh lebar ---------- */
+  #absensi-hari-ini-section{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:1.4rem;box-shadow:var(--sh);padding:1.35rem 1.6rem 1.6rem}
+  #absensi-hari-ini-section>div:first-child{margin-bottom:.9rem}
+  #absensi-hari-ini-section>div:first-child h3{font-size:1.25rem;letter-spacing:-.02em;display:flex;align-items:center;gap:.65rem}
+  #absensi-hari-ini-section>div:first-child h3::before{content:"";width:.6rem;height:.6rem;border-radius:50%;background:#10b981;box-shadow:0 0 0 0 rgba(16,185,129,.5);animation:livePulse 1.8s ease-out infinite}
+  #absen-updated{font-size:.75rem}
+  #btn-absen-refresh{width:2.2rem;height:2.2rem;border-color:var(--line);transition:transform .35s var(--ease),background-color .2s,color .2s}
+  #btn-absen-refresh:hover{transform:rotate(180deg);background:#0073B7;color:#fff}
+  #app-shell button[onclick^="scrollContainer("]{display:none}
+  #pill-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));overflow:visible;padding:0;gap:.65rem}
+  #pill-container>*{margin:0}
+  #pill-container>.pill-btn{justify-content:center;padding:.85rem 1rem;font-size:.92rem;border-radius:1rem;border:1px solid var(--line);background:#fff;color:#31516f;transition:transform .2s var(--ease),box-shadow .25s,border-color .2s,background-color .2s,color .2s}
+  #pill-container>.pill-btn:hover{transform:translateY(-2px);border-color:#0073B7;color:#0073B7}
+  #pill-container>.pill-btn.active{background:linear-gradient(135deg,#0b8bd8,#005a96);color:#fff;border-color:transparent;box-shadow:0 12px 22px -12px rgba(0,90,150,.9)}
+  #pill-container .pill-btn span:not(.hidden){animation:badgePop .45s var(--ease)}
+  #absen-tools{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem .8rem;margin-top:1rem}
+  #absen-tools>*{margin:0}
+  #absen-tools>#absen-sub-pills{flex:0 1 auto;order:3}#absen-tools>#absen-count{flex:0 0 auto;order:4;margin-left:auto;white-space:nowrap;text-align:right}#absen-tools>#absen-cab-summary{flex:1 1 100%;order:5}
+  #absen-tools>div:nth-child(2){flex:2 1 26rem;min-width:0;order:1}
+  #absen-tools>div:nth-child(3){flex:1 1 22rem;min-width:0;order:2}
+  #absen-tools input,#absen-tools select{height:2.65rem;border-radius:.9rem;border:1px solid var(--line);background:#f6f9fd;font-size:.86rem;transition:border-color .2s,box-shadow .2s,background-color .2s}
+  #absen-tools input:focus,#absen-tools select:focus{background:#fff;border-color:#0073B7;box-shadow:0 0 0 4px rgba(0,115,183,.13);outline:0}
+  #absen-tools #absen-q{padding-left:2.4rem}
+  #absen-tools button[id^="btn-absen-"],#absen-tools button[onclick^="exportAbsenCSV"]{width:2.65rem;height:2.65rem;border-radius:.9rem;border-color:var(--line);transition:transform .2s var(--ease),box-shadow .2s}
+  #absen-tools button[id^="btn-absen-"]:hover,#absen-tools button[onclick^="exportAbsenCSV"]:hover{transform:translateY(-2px);box-shadow:0 10px 18px -10px rgba(0,60,110,.5)}
+  #absen-sub-pills[style*="flex"]{display:flex!important;flex-wrap:wrap;overflow:visible}
+  #absen-sub-pills button{padding:.4rem .95rem;font-size:.78rem;transition:transform .2s var(--ease),background-color .2s}
+  #absen-sub-pills button:hover{transform:translateY(-1px)}
+  #absen-cab-summary[style*="flex"]{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:.65rem;overflow:visible}
+  #absen-cab-summary>button{min-width:0;padding:.7rem .95rem;border-radius:1rem;border-color:var(--line);transition:transform .2s var(--ease),box-shadow .25s,border-color .2s}
+  #absen-cab-summary>button:hover{transform:translateY(-2px);box-shadow:var(--sh-hi);border-color:#7fc1ea}
+  #absen-cab-summary>button p:first-child{font-size:.72rem;max-width:none;font-weight:600}
+  #absen-cab-summary>button p:nth-child(2){font-size:1.35rem}
+  #absen-cab-summary>button .h-1{height:.3rem}
+  #absen-cab-summary>button .h-1>div{transform-origin:left;animation:barGrow .7s var(--ease) both}
+  #absen-count{font-size:.78rem}
+  #daftar-absen-container{min-height:0;margin-top:1rem}
+  /* kartu karyawan: grid yang MENGISI seluruh lebar (auto-fit), tidak ada kotak kosong */
+  #absen-rows,#daftar-absen-container .p-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(21rem,1fr));gap:.85rem}
+  #absen-rows>*,#daftar-absen-container .p-2>*{margin:0}
+  #daftar-absen-container .p-2>button[data-act]{grid-column:1/-1}
+  #daftar-absen-container [data-nik]{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:1.1rem;box-shadow:var(--sh);padding-left:1.4rem;transition:transform .25s var(--ease),box-shadow .25s,border-color .25s}
+  #daftar-absen-container [data-nik].p-3{padding:1rem 1.2rem 1rem 1.45rem}
+  #daftar-absen-container [data-nik]:hover{transform:translateY(-3px);background:#fff;border-color:#8cc8ec;box-shadow:var(--sh-hi)}
+  #daftar-absen-container [data-nik]:active{transform:scale(.985)}
+  #daftar-absen-container [data-nik]::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,#38bdf8,#0073B7)}
+  #daftar-absen-container [data-nik]:has(.text-red-500)::before,#daftar-absen-container [data-nik]:has(.bg-red-100)::before{background:linear-gradient(180deg,#fb7185,#dc2626)}
+  #daftar-absen-container [data-nik]:has(.bg-emerald-100)::before{background:linear-gradient(180deg,#34d399,#059669)}
+  #daftar-absen-container [data-nik]:has(.text-amber-600)::before{background:linear-gradient(180deg,#fbbf24,#d97706)}
+  #daftar-absen-container [data-nik] p.text-sm{font-size:1rem;letter-spacing:-.01em}
+  #daftar-absen-container [data-nik] .text-sm.font-black{font-size:1.25rem;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+  #daftar-absen-container [id^="aa-"]{box-shadow:0 0 0 3px #fff,0 0 0 4px var(--line)}
+  #daftar-absen-container .bg-slate-50.border.rounded-xl{background:#fff;border-color:var(--line);border-radius:1.1rem;box-shadow:var(--sh)}
+  #absen-more,#daftar-absen-container button[data-act]{border-radius:.95rem;transition:transform .2s var(--ease),background-color .2s}
+  #daftar-absen-container button[data-act]:hover{transform:translateY(-2px);background:#dbeefb}
+  /* animasi daftar hanya saat pengguna memfilter / pertama kali tampil (bukan saat auto-refresh) */
+  #absensi-hari-ini-section.fx-play #daftar-absen-container [data-nik]{animation:cardIn .5s var(--ease) both}
+  #absensi-hari-ini-section.fx-play #daftar-absen-container [data-nik]:nth-child(2){animation-delay:40ms}
+  #absensi-hari-ini-section.fx-play #daftar-absen-container [data-nik]:nth-child(3){animation-delay:80ms}
+  #absensi-hari-ini-section.fx-play #daftar-absen-container [data-nik]:nth-child(4){animation-delay:120ms}
+  #absensi-hari-ini-section.fx-play #daftar-absen-container [data-nik]:nth-child(5){animation-delay:160ms}
+  #absensi-hari-ini-section.fx-play #daftar-absen-container [data-nik]:nth-child(6){animation-delay:200ms}
+  #absensi-hari-ini-section.fx-play #daftar-absen-container [data-nik]:nth-child(n+7){animation-delay:240ms}
+
+  /* ---------- PANEL HR: navigasi kiri + konten kanan ---------- */
+  #hr-panel-page{background:transparent}
+  #hr-panel-page:not(.hidden){display:grid;grid-template-columns:15.5rem minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:1.75rem;align-content:start;align-items:start;max-width:118rem;width:100%;margin:0 auto;padding:1.5rem var(--gut) 3rem}
+  #hr-panel-page>.sticky{display:contents}
+  #hr-panel-page>.sticky h1{grid-area:1/1/2/3;margin:0;padding:0;font-size:1.6rem;line-height:2rem;letter-spacing:-.025em;font-weight:800;color:#06223d}
+  #hr-panel-page>.sticky>p{grid-area:2/1/3/3;margin:.1rem 0 1.25rem;padding:0;font-size:.86rem;line-height:1.3rem;color:#5b7189}
+  #hr-panel-page>.sticky>.relative{grid-area:3/1/4/2;position:sticky;top:1.1rem;align-self:start;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:1.25rem;box-shadow:var(--sh);padding:.9rem .75rem;max-height:calc(100vh - 2.2rem);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none;animation:proIn .55s var(--ease) .1s both}
+  #hr-panel-page>.sticky>.relative::-webkit-scrollbar{display:none}
+  #hrtab-container{flex-direction:column;flex-wrap:nowrap;overflow:visible;padding:0;gap:.2rem}
+  #hrtab-container>button{margin:0;width:100%;justify-content:flex-start;text-align:left;white-space:normal;border-radius:.85rem;border-color:transparent;background:transparent;color:#4a6178;padding:.55rem .9rem;font-size:.84rem;transition:background-color .2s,color .2s,transform .2s var(--ease)}
+  #hrtab-container>button:hover{background:#eef5fb;color:#0073B7;transform:translateX(3px)}
+  #hrtab-container>button.bg-primary{background:linear-gradient(135deg,#0b8bd8,#005a96);color:#fff;box-shadow:0 12px 20px -12px rgba(0,90,150,.9)}
+  #hrtab-container #hr-badge-pending{margin-left:auto}
+  #hr-panel-page>.p-4{grid-area:3/2/4/3;padding:0;min-width:0}
+  #hr-panel-page>.p-4>[id^="hr-sec-"]:not(.hidden){animation:proIn .45s var(--ease) both}
+  #hr-panel-page [id^="hr-sec-"] .bg-white.rounded-2xl{border-color:var(--line);border-radius:1.3rem;box-shadow:var(--sh);padding:1.25rem 1.4rem}
+  #hr-panel-page [id^="hr-sec-"] h2.text-xs{font-size:1rem;letter-spacing:-.01em}
+  /* seksi form + daftar: dua kolom berdampingan */
+  #hr-sec-karyawan:not(.hidden),#hr-sec-pengaturan:not(.hidden),#hr-sec-cabang:not(.hidden),#hr-sec-hari-libur:not(.hidden),#hr-sec-kuota-cuti:not(.hidden){display:grid;grid-template-columns:minmax(22rem,30rem) minmax(0,1fr);gap:1.4rem;align-items:start}
+  #hr-sec-karyawan:not(.hidden)>*,#hr-sec-pengaturan:not(.hidden)>*,#hr-sec-cabang:not(.hidden)>*,#hr-sec-hari-libur:not(.hidden)>*,#hr-sec-kuota-cuti:not(.hidden)>*{margin:0}
+  #hr-sec-karyawan:not(.hidden)>:first-child,#hr-sec-pengaturan:not(.hidden)>:first-child,#hr-sec-cabang:not(.hidden)>:first-child,#hr-sec-hari-libur:not(.hidden)>:first-child,#hr-sec-kuota-cuti:not(.hidden)>:first-child{position:sticky;top:1.1rem;max-height:calc(100vh - 2.2rem);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  #hr-sec-lembur-rule:not(.hidden),#hr-sec-perusahaan:not(.hidden),#hr-sec-laporan:not(.hidden){max-width:60rem}
+  /* ringkasan HR */
+  #hr-sec-dashboard>.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:1.1rem}
+  #hr-sec-dashboard>.grid>div{position:relative;overflow:hidden;padding:1.25rem 1.4rem;transition:transform .25s var(--ease),box-shadow .25s}
+  #hr-sec-dashboard>.grid>div:hover{transform:translateY(-4px);box-shadow:var(--sh-hi)}
+  #hr-sec-dashboard>.grid>div>div:first-child{width:2.6rem;height:2.6rem;border-radius:.9rem;font-size:1.05rem}
+  #hr-sec-dashboard>.grid>div h4{font-size:.74rem;letter-spacing:.02em}
+  #hr-sec-dashboard>.grid>div p[id^="stat-"]{font-size:2.3rem;line-height:1.1;font-variant-numeric:tabular-nums}
+  #hr-sec-dashboard .relative.h-\[200px\]{height:21rem}
+  #hr-sec-dashboard>.grid>div:nth-child(1){animation:cardIn .5s var(--ease) both}
+  #hr-sec-dashboard>.grid>div:nth-child(2){animation:cardIn .5s var(--ease) .06s both}
+  #hr-sec-dashboard>.grid>div:nth-child(3){animation:cardIn .5s var(--ease) .12s both}
+  #hr-sec-dashboard>.grid>div:nth-child(4){animation:cardIn .5s var(--ease) .18s both}
+
+  /* ---------- MODAL: panel samping ---------- */
+  body .backdrop-blur-sm,.ui-dlg-back{backdrop-filter:none;-webkit-backdrop-filter:none}
+  #generic-modal{background:rgba(4,24,44,.55)}
+  #generic-modal:not(.hidden){animation:dlgFade .2s ease both}
+  #generic-modal>div{max-width:46rem;animation:sheetIn .38s var(--ease);box-shadow:-30px 0 70px -30px rgba(0,16,40,.6)}
+  #generic-modal>div>.bg-primary{background:linear-gradient(115deg,#004f8c,#0073B7 60%,#1c95d8)}
+  #generic-modal #modal-content{background:#f3f7fb}
+
+  /* ---------- animasi masuk berurutan (sekali saat halaman tampil) ---------- */
+  #beranda-page:not(.hidden) #app-header{animation:proHead .6s var(--ease) both}
+  #beranda-body>*{animation:proIn .6s var(--ease) both;animation-delay:calc(var(--i,5)*60ms)}
+  #beranda-body>:nth-child(1){--i:1}#beranda-body>#personal-summary-section{--i:2}#beranda-body>:nth-child(2){--i:3}#beranda-body>:nth-child(3),#beranda-body>:nth-child(4){--i:4}
+}
+@keyframes barGrow{from{transform:scaleX(0)}to{transform:none}}
+/* ---------- dashboard 12 kolom (>=1280px) ---------- */
+@media (min-width:1280px){
+  #app-shell #beranda-body{grid-template-columns:repeat(12,minmax(0,1fr))}
+  #beranda-body>hr{display:none}
+  #today-card{grid-area:1/1/2/13}
+  #beranda-body>#personal-summary-section{grid-area:2/1/3/13;display:grid;grid-template-columns:minmax(12rem,15rem) minmax(0,1fr) minmax(16rem,22rem);align-items:center;gap:1.6rem;padding:1rem 1.4rem}
+  #personal-summary-section>div:first-child{flex-direction:column;align-items:flex-start;gap:.4rem;border:0;margin:0;padding:0}
+  #personal-summary-section>.grid{gap:.8rem;margin:0}
+  #personal-summary-section>.grid>div{background:linear-gradient(180deg,#fff,#f3f8fd);border-color:var(--line);padding:.65rem .95rem;border-radius:1rem;transition:transform .2s var(--ease)}
+  #personal-summary-section>.grid>div:hover{transform:translateY(-2px)}
+  #personal-summary-section .text-lg{font-size:1.65rem;line-height:1.1;font-variant-numeric:tabular-nums}
+  #beranda-body>:nth-child(2){grid-area:3/1/4/8}
+  #beranda-body>:nth-child(3){grid-area:4/1/5/8}
+  #beranda-body>div.grid{grid-area:3/8/5/13;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr}
+  #beranda-body>div.grid>button{flex-direction:row;justify-content:flex-start;gap:.8rem;padding:.65rem 1rem;text-align:left}
+  #beranda-body>div.grid>button>i{width:2.4rem;height:2.4rem;display:grid;place-items:center;border-radius:.8rem;background:#eef5fb;font-size:1.05rem;flex:none;transition:transform .25s var(--ease)}
+  #beranda-body>div.grid>button:hover>i{transform:scale(1.1) rotate(-6deg)}
+  #beranda-body>div.grid>button>span{font-size:.78rem}
+  #beranda-body>div.grid>button:last-child:nth-child(odd){grid-column:1/-1}
+  #absensi-hari-ini-section{grid-area:5/1/6/13}
+}
+@media (min-width:1024px){
+  body:not(.nav-solo) #app-shell{padding-left:4.5rem}
+  body:not(.nav-solo) #bottom-nav{width:4.5rem;max-width:4.5rem;padding:1.1rem .4rem 1rem;gap:.7rem}
+  body:not(.nav-solo) #bottom-nav .nav-brand{width:3.6rem;padding-bottom:.8rem;margin-bottom:.2rem}
+  body:not(.nav-solo) #bottom-nav .nav-brand i{width:2.1rem;height:2.1rem;font-size:1.05rem;border-radius:.7rem}
+  body:not(.nav-solo) #bottom-nav .nav-brand span{font-size:.58rem}
+  body:not(.nav-solo) #bottom-nav>button{width:3.6rem;padding:.5rem 0;border-radius:.8rem}
+  body:not(.nav-solo) #bottom-nav>button i{font-size:1.05rem;margin-bottom:.2rem}
+  body:not(.nav-solo) #bottom-nav>button span,body:not(.nav-solo) #bottom-nav>div.relative span{font-size:.6rem}
+  body:not(.nav-solo) #bottom-nav>button.text-primary::before{left:-.45rem}
+  body:not(.nav-solo) #bottom-nav>div.relative{margin-bottom:1.1rem}
+  body:not(.nav-solo) #bottom-nav>div.relative button{width:3rem;height:3rem;border-width:4px}
+  body:not(.nav-solo) #bottom-nav>div.relative button i{font-size:1.35rem;margin:0}
+  body:not(.nav-solo) #bottom-nav .nav-foot{width:3.6rem;padding-top:.8rem}
+  body:not(.nav-solo) #bottom-nav .nav-tools{grid-template-columns:repeat(2,1.75rem);gap:.35rem}
+  body:not(.nav-solo) #bottom-nav .nav-tool{width:1.75rem;height:1.75rem;font-size:.72rem;border-radius:.55rem}
+}
+</style>
 </head>
 <body class="flex justify-center min-h-screen bg-slate-100 overflow-x-hidden">
 <div id="app-shell" class="w-full max-w-md md:max-w-4xl lg:max-w-6xl bg-white min-h-screen flex flex-col relative shadow-2xl overflow-x-clip pb-[80px]">
@@ -6267,6 +6521,43 @@ window.renderTodayCard=function(s){
   el.innerHTML='<div class="tc tc-'+st+'"><div class="tc-top"><span class="tc-ic"><i class="fa-solid '+ic+'"></i></span><div style="min-width:0"><div class="tc-ti">'+e(ti)+'</div>'+(su?'<div class="tc-su">'+e(su)+'</div>':'')+'</div></div>'
     +'<div class="tc-times"><div><span>Masuk</span><b>'+e(hm(s.jamMasuk))+'</b></div><div><span>Pulang</span><b>'+e(hm(s.jamPulang))+'</b></div></div>'+btn+note+OUT+'</div>';
 };
+</script>
+<script id="pro-fx">
+/* Efek visual laptop: hanya tampilan, tidak menyentuh logika aplikasi */
+(function(){
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+  /* 1) angka statistik naik halus saat nilainya berubah */
+  if(!reduce){
+    ['stat-hadir','stat-terlambat','stat-izin','stat-belum','my-stat-hadir','my-stat-terlambat','my-stat-izin','my-stat-lembur'].forEach(function(id){
+      var el=document.getElementById(id);if(!el)return;
+      var busy=false,last=parseInt(el.textContent,10)||0;
+      new MutationObserver(function(){
+        if(busy)return;var to=parseInt(el.textContent,10);
+        if(isNaN(to)||to===last)return;
+        var from=last,t0=performance.now();last=to;busy=true;
+        (function f(t){var p=Math.min(1,(t-t0)/700),e=1-Math.pow(1-p,3);
+          el.textContent=Math.round(from+(to-from)*e);
+          if(p<1)requestAnimationFrame(f);else{el.textContent=to;busy=false;}})(t0);
+      }).observe(el,{childList:true,characterData:true,subtree:true});
+    });
+  }
+  /* 2) sorot lembut mengikuti kursor pada kartu */
+  var sel='#absen-rows>[data-nik],#daftar-absen-container [data-nik],#beranda-body>div.grid>button,#beranda-body .bg-slate-50.rounded-2xl',raf=0;
+  document.addEventListener('pointermove',function(e){
+    if(e.pointerType==='touch'||!e.target.closest)return;
+    var t=e.target.closest(sel);if(!t)return;
+    cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(function(){var r=t.getBoundingClientRect();
+      t.style.setProperty('--mx',(e.clientX-r.left)+'px');t.style.setProperty('--my',(e.clientY-r.top)+'px');});
+  },{passive:true});
+  /* 3) kartu karyawan muncul berurutan hanya saat difilter / pertama tampil (bukan tiap auto-refresh) */
+  var sec=document.getElementById('absensi-hari-ini-section'),box=document.getElementById('daftar-absen-container'),tm=0,first=true;
+  function play(ms){if(!sec||reduce)return;sec.classList.add('fx-play');clearTimeout(tm);tm=setTimeout(function(){sec.classList.remove('fx-play');},ms||900);}
+  if(sec){
+    ['click','input','change'].forEach(function(ev){sec.addEventListener(ev,function(){play(1000);},true);});
+    if(box)new MutationObserver(function(){if(first&&box.querySelector('[data-nik]')){first=false;play(1100);}}).observe(box,{childList:true,subtree:true});
+  }
+})();
 </script>
 </body>
 </html>
